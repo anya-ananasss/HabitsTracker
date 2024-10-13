@@ -15,7 +15,7 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 public class UserControllerTests {
-        UserRepository repo = new UserRepository();
+    UserRepository repo = new UserRepository();
     UserService service = new UserService(repo);
 
     private void newUserRegistration() {
@@ -68,7 +68,7 @@ public class UserControllerTests {
         System.setOut(new PrintStream(outContent));
         controller.showMainPage_user();
 
-        String expectedMessage =  "Пожалуйста, нажмите 1, чтобы перейти в меню управления привычками, 2 - чтобы перейти в личный кабинет!";
+        String expectedMessage = "Пожалуйста, нажмите 1, чтобы перейти в меню управления привычками, 2 - чтобы перейти в личный кабинет!";
         String output = outContent.toString();
         assertTrue(output.contains(expectedMessage));
         System.setOut(System.out);
@@ -161,7 +161,7 @@ public class UserControllerTests {
         System.setOut(new PrintStream(outContent));
         controller.showPersonalAccountSettings();
 
-        String expectedMessage =  "Пожалуйста, введите 1, чтобы изменить личную информацию, 2 - чтобы выйти из аккаунта, 3 - чтобы удалить аккаунт, 4 - вернуться назад!";
+        String expectedMessage = "Пожалуйста, введите 1, чтобы изменить личную информацию, 2 - чтобы выйти из аккаунта, 3 - чтобы удалить аккаунт, 4 - вернуться назад!";
         String output = outContent.toString();
         assertTrue(output.contains(expectedMessage));
         System.setOut(System.out);
@@ -718,6 +718,7 @@ public class UserControllerTests {
         controller.setUserEmail("anya@ya.ru");
         controller.setUserName("anya");
 
+
         doNothing().when(controller).showPersonalAccountSettings();
 
         ByteArrayOutputStream outContent = new ByteArrayOutputStream();
@@ -728,5 +729,312 @@ public class UserControllerTests {
         User expected = new User("anya", "anya@ya.ru", service.encrypt("1234"), 1);
         User found = service.readUser_byEmail("anya@ya.ru");
         assertEquals(expected, found);
+    }
+
+    @Test
+    public void enterPass() {
+        newUserRegistration();
+        String input = "5678\n1234\n";
+
+        InputStream in = new ByteArrayInputStream(input.getBytes());
+        System.setIn(in);
+
+
+        UserController controller = new UserController(service);
+
+        controller.setUserEmail("anya@ya.ru");
+        controller.setUserName("anya");
+
+
+        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(outContent));
+
+        controller.enterPassword_login("anya@ya.ru");
+
+        String expectedMessage1 = "Введен неверный пароль! Повторите попытку!";
+        String expectedMessage2 = "Авторизируем...";
+
+        String output = outContent.toString();
+        assertTrue(output.contains(expectedMessage1));
+        assertTrue(output.contains(expectedMessage2));
+        System.setOut(System.out);
+        System.setIn(System.in);
+
+
+    }
+
+    @Test
+    public void loginUser() {
+        newUserRegistration();
+        String input = "anya@ya.ru\n1234\n";
+
+        InputStream in = new ByteArrayInputStream(input.getBytes());
+        System.setIn(in);
+
+
+        UserController controller = spy(new UserController(service));
+        doNothing().when(controller).showMainPage_user();
+
+        controller.setUserEmail("anya@ya.ru");
+        controller.setUserName("anya");
+
+
+        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(outContent));
+
+        controller.loginUser();
+
+        String expectedMessage = "Здравствуйте, anya!";
+
+        String output = outContent.toString();
+        assertTrue(output.contains(expectedMessage));
+        System.setOut(System.out);
+        System.setIn(System.in);
+    }
+
+    @Test
+    public void enterEmail_login() {
+        newUserRegistration();
+        String input = "an@ya.ru\n1\nanya@ya.ru\n1234\n";
+
+        InputStream in = new ByteArrayInputStream(input.getBytes());
+        System.setIn(in);
+
+
+        UserController controller = new UserController(service);
+
+        controller.setUserEmail("anya@ya.ru");
+        controller.setUserName("anya");
+
+
+        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(outContent));
+
+        controller.enterEmail_login();
+
+        String expectedMessage = "Пользователь с таким email не найден!";
+
+        String output = outContent.toString();
+        assertTrue(output.contains(expectedMessage));
+        System.setOut(System.out);
+        System.setIn(System.in);
+    }
+
+    @Test
+    public void adminPage_1_void() {
+        String input = "1\n4\n";
+
+        InputStream in = new ByteArrayInputStream(input.getBytes());
+        System.setIn(in);
+
+
+        UserController controller = spy(new UserController(service));
+        controller.CREATE_ADMIN();
+        doNothing().when(controller).showGreetingScreen();
+
+        controller.setUserEmail("anya@ya.ru");
+        controller.setUserName("anya");
+
+
+        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(outContent));
+
+        controller.showMainPage_admin();
+
+        String expectedMessage = "Ни одного пользователя не создано!";
+
+        String output = outContent.toString();
+        assertTrue(output.contains(expectedMessage));
+        System.setOut(System.out);
+        System.setIn(System.in);
+    }
+
+    @Test
+    public void adminPage_2_void() {
+        String input = "2\n4\n";
+
+        InputStream in = new ByteArrayInputStream(input.getBytes());
+        System.setIn(in);
+
+
+        UserController controller = spy(new UserController(service));
+        controller.CREATE_ADMIN();
+        doNothing().when(controller).showGreetingScreen();
+
+        controller.setUserEmail("anya@ya.ru");
+        controller.setUserName("anya");
+
+
+        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(outContent));
+
+        controller.showMainPage_admin();
+
+        String expectedMessage = "Ни одного пользователя не создано!";
+
+        String output = outContent.toString();
+        assertTrue(output.contains(expectedMessage));
+        System.setOut(System.out);
+        System.setIn(System.in);
+    }
+
+    @Test
+    public void adminPage_3_void() {
+        String input = "3\n4\n";
+
+        InputStream in = new ByteArrayInputStream(input.getBytes());
+        System.setIn(in);
+
+
+        UserController controller = spy(new UserController(service));
+        controller.CREATE_ADMIN();
+        doNothing().when(controller).showGreetingScreen();
+
+        controller.setUserEmail("anya@ya.ru");
+        controller.setUserName("anya");
+
+
+        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(outContent));
+
+        controller.showMainPage_admin();
+
+        String expectedMessage = "Ни одного пользователя не создано!";
+
+        String output = outContent.toString();
+        assertTrue(output.contains(expectedMessage));
+        System.setOut(System.out);
+        System.setIn(System.in);
+    }
+
+    @Test
+    public void adminPage_1() {
+        String input = "1\n4\n";
+
+        InputStream in = new ByteArrayInputStream(input.getBytes());
+        System.setIn(in);
+
+
+        UserController controller = spy(new UserController(service));
+        controller.CREATE_ADMIN();
+        newUserRegistration();
+        doNothing().when(controller).showGreetingScreen();
+
+        controller.setUserEmail("anya@ya.ru");
+        controller.setUserName("anya");
+
+
+        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(outContent));
+
+        controller.showMainPage_admin();
+
+        String expectedMessage = "1. anya, anya@ya.ru, активен=true";
+
+        String output = outContent.toString();
+        assertTrue(output.contains(expectedMessage));
+        System.setOut(System.out);
+        System.setIn(System.in);
+    }
+
+    @Test
+    public void adminPage_2() {
+        String input = "2\nanya@ya.ru\n1\n4\n";
+
+        InputStream in = new ByteArrayInputStream(input.getBytes());
+        System.setIn(in);
+
+
+        UserController controller = spy(new UserController(service));
+        controller.CREATE_ADMIN();
+        newUserRegistration();
+        doNothing().when(controller).showGreetingScreen();
+
+        controller.setUserEmail("anya@ya.ru");
+        controller.setUserName("anya");
+
+
+        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(outContent));
+
+        controller.showMainPage_admin();
+
+        String expectedMessage1 = "Успешно";
+        String expectedMessage2 = "1. anya, anya@ya.ru, активен=false";
+
+
+        String output = outContent.toString();
+        assertTrue(output.contains(expectedMessage1));
+        assertTrue(output.contains(expectedMessage2));
+
+
+        System.setOut(System.out);
+        System.setIn(System.in);
+    }
+
+    @Test
+    public void adminPage_3() {
+        String input = "3\nanya@ya.ru\n1\n4\n";
+
+        InputStream in = new ByteArrayInputStream(input.getBytes());
+        System.setIn(in);
+
+
+        UserController controller = spy(new UserController(service));
+        controller.CREATE_ADMIN();
+        newUserRegistration();
+        doNothing().when(controller).showGreetingScreen();
+
+        controller.setUserEmail("anya@ya.ru");
+        controller.setUserName("anya");
+
+
+        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(outContent));
+
+        controller.showMainPage_admin();
+
+        String expectedMessage1 = "Успешно";
+        String expectedMessage2 = "Ни одного пользователя не создано!";
+
+        String output = outContent.toString();
+        assertTrue(output.contains(expectedMessage1));
+        assertTrue(output.contains(expectedMessage2));
+        System.setOut(System.out);
+        System.setIn(System.in);
+    }
+
+
+    @Test
+    public void testBlockedUser(){
+        String input = "test@ya.ru\n1234\n";
+        InputStream in = new ByteArrayInputStream(input.getBytes());
+        System.setIn(in);
+
+
+        UserController controller = spy(new UserController(service));
+        doNothing().when(controller).showGreetingScreen();
+
+
+        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(outContent));
+
+        User testUser = new User("test", "test@ya.ru", "1234", 1);
+        testUser.setActive(false);
+        repo.addUser(testUser);
+        repo.addEmail("test@ya.ru");
+
+        controller.loginUser();
+
+        String expectedMessage = "К сожалению, ваш аккаунт заблокирован! Обратитесь к администратору.";
+
+
+
+        String output = outContent.toString();
+        assertTrue(output.contains(expectedMessage));
+
+
+        System.setOut(System.out);
+        System.setIn(System.in);
     }
 }

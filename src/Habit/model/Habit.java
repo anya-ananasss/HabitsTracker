@@ -13,14 +13,13 @@ import java.util.concurrent.TimeUnit;
 public class Habit {
     private String name;
     private String description; //ограничение - 200 символов
-    private LocalDateTime createdAt;
+    private final LocalDateTime createdAt;
     private LinkedHashMap<LocalDate, Boolean> statistics;
 
-    private User user;
+    private final User user;
 
 
     private Frequency frequency;
-
 
 
     public Habit(String name, String description, LocalDateTime createdAt, Frequency frequency, User user) {
@@ -28,11 +27,12 @@ public class Habit {
         this.description = description;
         this.createdAt = createdAt;
         this.user = user;
-        this.frequency=frequency;
+        this.frequency = frequency;
         this.statistics = new LinkedHashMap<>();
 
         scheduleDailyUpdate();
     }
+
     public enum Frequency {
         DAILY,
         WEEKLY,
@@ -41,9 +41,11 @@ public class Habit {
 
         MONTHLY
     }
+
     public User getUser() {
         return user;
     }
+
     public String getName() {
         return name;
     }
@@ -86,9 +88,7 @@ public class Habit {
         long initialDelay = calculateInitialDelay();
         long period = 24 * 60 * 60;
 
-        scheduler.scheduleAtFixedRate(() -> {
-            statistics.put(LocalDate.now(), false);
-        }, initialDelay, period, TimeUnit.SECONDS);
+        scheduler.scheduleAtFixedRate(() -> statistics.put(LocalDate.now(), false), initialDelay, period, TimeUnit.SECONDS);
     }
 
     private long calculateInitialDelay() {

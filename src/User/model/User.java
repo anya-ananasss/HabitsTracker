@@ -22,6 +22,7 @@ public class User {
                 Objects.equals(this.name, toWork.name) &
                 Objects.equals(this.password, toWork.password));
     }
+
     public User(String name, String email, String password, int role) {
         this.name = name;
         this.email = email;

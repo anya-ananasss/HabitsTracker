@@ -28,7 +28,7 @@ public class HabitStatisticsService {
         int maxStreak = 0;
         int currStreak = 0;
 
-        if (period==-1 || period >= examined.getStatistics().size()) {
+        if (period == -1 || period >= examined.getStatistics().size()) {
             for (Boolean value : examined.getStatistics().values()) {
                 if (value) {
                     currStreak++;
@@ -39,12 +39,9 @@ public class HabitStatisticsService {
                     currStreak = 0;
                 }
             }
-            if (currStreak > maxStreak) {
-                maxStreak = currStreak;
-            }
-        } else{
+        } else {
             for (int i = examined.getStatistics().size() - 1; i >= examined.getStatistics().size() - period; i--) {
-                if (examined.getStatistics().values().stream().collect(Collectors.toList()).get(i)) {
+                if (new ArrayList<>(examined.getStatistics().values()).get(i)) {
                     currStreak++;
                 } else {
                     if (currStreak > maxStreak) {
@@ -53,9 +50,9 @@ public class HabitStatisticsService {
                     currStreak = 0;
                 }
             }
-            if (currStreak > maxStreak) {
-                maxStreak = currStreak;
-            }
+        }
+        if (currStreak > maxStreak) {
+            maxStreak = currStreak;
         }
         return maxStreak;
 
@@ -65,7 +62,7 @@ public class HabitStatisticsService {
         Habit examined = repository.findHabitByName(habitName, this.user);
         int currStreak = 0;
         List<Boolean> values = new ArrayList<>(examined.getStatistics().values());
-        if (period==-1 || period >= examined.getStatistics().size()) {
+        if (period == -1 || period >= examined.getStatistics().size()) {
             for (int i = values.size() - 1; i >= 0; i--) {
                 if (values.get(i)) {
                     currStreak++;
@@ -73,7 +70,7 @@ public class HabitStatisticsService {
                     break;
                 }
             }
-        } else{
+        } else {
             for (int i = values.size() - 1; i >= values.size() - period; i--) {
                 if (values.get(i)) {
                     currStreak++;
@@ -89,7 +86,7 @@ public class HabitStatisticsService {
         int CODE_FOR_ALL = -1;
 
         Habit examined = repository.findHabitByName(habitName, this.user);
-        if (period>examined.getStatistics().size()){
+        if (period > examined.getStatistics().size()) {
             period = CODE_FOR_ALL;
         }
         double markedDays = 0;
@@ -123,11 +120,11 @@ public class HabitStatisticsService {
     public Object[] formAllHabitsReport(int period) {
         Map<String, double[]> report = new HashMap<>();
         List<Habit> habits = repository.getAllHabits_byUser(this.user);
-        if (habits.isEmpty()){
+        if (habits.isEmpty()) {
             String message = "Ни одной привычки еще не было создано!";
             return new Object[]{message};
         }
-        if (period==-1){
+        if (period == -1) {
             period = habits.get(0).getStatistics().size();
         }
         for (Habit habit : habits) {
@@ -141,9 +138,9 @@ public class HabitStatisticsService {
             report.put(habit.getName(), habitData);
         }
 
-       int overallCompleteness = getAllHabitsCompleteness(period);
-       double overallCompleteness_percentage = (getAllHabitsCompleteness(period)*100.0)/(period*habits.size());
+        int overallCompleteness = getAllHabitsCompleteness(period);
+        double overallCompleteness_percentage = (getAllHabitsCompleteness(period) * 100.0) / (period * habits.size());
 
-       return new Object[]{report, overallCompleteness, overallCompleteness_percentage};
+        return new Object[]{report, overallCompleteness, overallCompleteness_percentage};
     }
 }

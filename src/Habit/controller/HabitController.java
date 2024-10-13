@@ -23,24 +23,24 @@ public class HabitController {
     public void showMainMenu() {
         while (true) {
             System.out.println("""
-                Выберите, что вы хотите сделать:
-                1. Просмотреть привычки
-                2. Отметить выполнение привычки
-                3. Просмотреть статистику
-                4. Отредактировать привычки
-                5. Назад
-                6. Выход из программы
-                """);
+                    Выберите, что вы хотите сделать:
+                    1. Просмотреть привычки
+                    2. Отметить выполнение привычки
+                    3. Просмотреть статистику
+                    4. Отредактировать привычки
+                    5. Назад
+                    6. Выход из программы
+                    """);
             String i = scanner.nextLine();
             switch (i) {
                 case "1":
-                    showHabits(); //+
+                    showHabits(true); //+
                     break;
                 case "2":
                     markHabit(); //+
                     break;
                 case "3":
-                   showStatisticsMenu();//+
+                    showStatisticsMenu();//+
                     break;
                 case "4":
                     showSettings();
@@ -58,7 +58,7 @@ public class HabitController {
     }
 
     //просмотреть привычки:
-    public void showHabits() {
+    public void showHabits(boolean habitsPresent) {
         String show;
         System.out.println("""
                 Выберите, как нужно отфильтровать привычки:
@@ -73,29 +73,33 @@ public class HabitController {
             show = scanner.nextLine();
             switch (show) {
                 case "1":
-                    if (service.readUserHabits_filterByCreationDate_earilerLast().isEmpty()){
+                    if (service.readUserHabits_filterByCreationDate_earilerLast().isEmpty()) {
                         System.out.println("Привычки не были созданы!");
+                        habitsPresent = false;
                     } else {
                         showList(service.readUserHabits_filterByCreationDate_earilerLast());
                     }
                     break mainLoop;
                 case "2":
-                    if (service.readUserHabits_filterByCreationDate_earilerFirst().isEmpty()){
+                    if (service.readUserHabits_filterByCreationDate_earilerFirst().isEmpty()) {
                         System.out.println("Привычки не были созданы!");
+                        habitsPresent = false;
                     } else {
                         showList(service.readUserHabits_filterByCreationDate_earilerFirst());
                     }
                     break mainLoop;
                 case "3":
-                    if (service.sortHabits_marked(true).isEmpty()){
+                    if (service.sortHabits_marked(true).isEmpty()) {
                         System.out.println("Привычки не были созданы!");
                     } else {
                         showHabitsMap(service.sortHabits_marked(true));
                     }
+                    habitsPresent = false;
                     break mainLoop;
                 case "4":
-                    if (service.sortHabits_marked(false).isEmpty()){
+                    if (service.sortHabits_marked(false).isEmpty()) {
                         System.out.println("Привычки не были созданы!");
+                        habitsPresent = false;
                     } else {
                         showHabitsMap(service.sortHabits_marked(false));
                     }
@@ -108,31 +112,42 @@ public class HabitController {
                     break;
             }
         }
-        mainLoop1:
-        while (true) {
-            System.out.println("Хотите отредактировать привычки? да/нет");
-            String i = scanner.nextLine();
-            switch (i) {
-                case "да":
-                    showSettings();
-                    break mainLoop1;
-                case "нет":
-                    if (show.equals("1")) {
-                        showList(service.readUserHabits_filterByCreationDate_earilerLast());
-                    } else {
-                        showList(service.readUserHabits_filterByCreationDate_earilerFirst());
-                    }
-                    break mainLoop1;
-                default:
-                    System.out.println("Пожалуйста, введите да или нет.");
-                    break;
+        if (habitsPresent) {
+            mainLoop1:
+            while (true) {
+                System.out.println("Хотите отредактировать привычки? да/нет");
+                String i = scanner.nextLine();
+                switch (i) {
+                    case "да":
+                        showSettings();
+                        break mainLoop1;
+                    case "нет":
+                        if (show.equals("1")) {
+                            showList(service.readUserHabits_filterByCreationDate_earilerLast());
+                        } else {
+                            showList(service.readUserHabits_filterByCreationDate_earilerFirst());
+                        }
+                        break mainLoop1;
+                    default:
+                        System.out.println("Пожалуйста, введите да или нет.");
+                        break;
+                }
             }
         }
     }
-    private void showHabitsMap(LinkedHashMap<String, LocalDate> sorted){
+
+    private void showHabitsMap(LinkedHashMap<String, LocalDate> sorted) {
         int index = 1;
-        for (Map.Entry<String, LocalDate> entry : sorted.entrySet()){
-            System.out.println(index+". "+entry.getKey()+", "+entry.getValue());
+        for (Map.Entry<String, LocalDate> entry : sorted.entrySet()) {
+            LocalDate value = entry.getValue();
+            String val;
+            if (value == null) {
+                val = "-";
+            } else {
+                val = value.toString();
+            }
+            System.out.println(index + ". " + entry.getKey() + ", " + val);
+            index++;
         }
     }
 
@@ -152,14 +167,14 @@ public class HabitController {
                     createHabit();//+
                     break mainLoop;
                 case "2":
-                    if(service.readUserHabits_filterByCreationDate_earilerLast().isEmpty()){
+                    if (service.readUserHabits_filterByCreationDate_earilerLast().isEmpty()) {
                         System.out.println("Ни одной привычки не было создано!");
                     } else {
                         updateHabit();
                     }//+
                     break mainLoop;
                 case "3":
-                    if(service.readUserHabits_filterByCreationDate_earilerLast().isEmpty()){
+                    if (service.readUserHabits_filterByCreationDate_earilerLast().isEmpty()) {
                         System.out.println("Ни одной привычки не было создано!");
                     } else {
                         deleteHabit();//+
@@ -197,12 +212,14 @@ public class HabitController {
         String name;
         while (true) {
             name = scanner.nextLine();
-            if (!service.nameExists(name)) {
-                System.out.println("Привычка с таким названием не найдена! Попробуйте еще раз!");
-            } else {
+            String checkRes = checkName(name);
+            if (checkRes.equals("2")) {
+                return;
+            } else if (checkRes.equals("НАЙДЕНО")) {
                 break;
             }
         }
+
         System.out.println("""
                 Выберите, что хотите отредактировать:
                 1. Название
@@ -218,7 +235,9 @@ public class HabitController {
                     while (true) {
                         System.out.println("Введите новое название.");
                         String newName = scanner.nextLine();
-                        if (service.updateHabit_name(newName, name).equals("Успешно обновлено!")) {
+                        String res = service.updateHabit_name(newName, name);
+                        System.out.println(res);
+                        if (res.equals("Успешно обновлено!")) {
                             break;
                         }
                     }
@@ -227,15 +246,18 @@ public class HabitController {
                     while (true) {
                         System.out.println("Введите новое описание.");
                         String newDescr = scanner.nextLine();
-                        if (service.updateHabit_description(newDescr, name).equals("Описание обновлено!")) {
+                        String res = service.updateHabit_description(newDescr, name);
+                        System.out.println(res);
+                        if (res.equals("Описание обновлено!")) {
                             break;
                         }
+
                     }
                     break loop1;
                 case "3":
                     System.out.println("Введите новую частоту: ежедневно, еженедельно, раз в две недели, раз в три недели или ежемесячно.");
                     Habit.Frequency frequency = setFrequency();
-                    service.updateHabit_frequency(frequency, name);
+                    System.out.println(service.updateHabit_frequency(frequency, name));
                     break loop1;
                 case "4":
                     showSettings();
@@ -244,40 +266,46 @@ public class HabitController {
         }
     }
 
+
     public void deleteHabit() {
         String name;
         main:
         while (true) {
             System.out.println("Введите название привычки, которую хотите удалить.");
-            name = scanner.nextLine();
-            if (!service.nameExists(name)) {
-                System.out.println("Такая привычка не найдена!");
-            } else {
-                while (true) {
-                    System.out.println("Вы действительно хотите удалить привычку " + name + "? Это действие невозможно отменить! да/нет");
-                    String i = scanner.nextLine();
-                    switch (i) {
-                        case "да":
-                            service.deleteHabit(name);
-                            System.out.println("Успешно удалено.");
-                            break main;
-                        case "нет":
-                            showSettings();
-                            break main;
-                        default:
-                            System.out.println("Пожалуйста, введите да или нет.");
-                            break;
-                    }
+            while (true) {
+                name = scanner.nextLine();
+                String checkRes = checkName(name);
+                if (checkRes.equals("2")) {
+                    return;
+                } else if (checkRes.equals("НАЙДЕНО")) {
+                    break;
+                }
+            }
+            while (true) {
+                System.out.println("Вы действительно хотите удалить привычку " + name + "? Это действие невозможно отменить! да/нет");
+                String i = scanner.nextLine();
+                switch (i) {
+                    case "да":
+                        service.deleteHabit(name);
+                        System.out.println("Успешно удалено.");
+                        break main;
+                    case "нет":
+                        showSettings();
+                        break main;
+                    default:
+                        System.out.println("Пожалуйста, введите да или нет.");
+                        break;
                 }
             }
         }
     }
 
-    private Habit.Frequency setFrequency() {
+    public Habit.Frequency setFrequency() {
         Habit.Frequency frequency;
         aux:
         while (true) {
-            String f = scanner.nextLine();
+            String f = scanner.nextLine().toLowerCase();
+            f = f.replaceAll("\s+", " ").trim();
             switch (f) {
                 case "ежедневно":
                     frequency = Habit.Frequency.DAILY;
@@ -312,20 +340,23 @@ public class HabitController {
             System.out.println(i + 1 + ". " + habits.get(i).getName());
         }
     }
+
     //отметить привычку
-public void markHabit(){
+    public void markHabit() {
         String name;
+        System.out.println("Введите название привычки, которую хотите отметить.");
         while (true) {
-            System.out.println("Введите название привычки, которую хотите отметить.");
             name = scanner.nextLine();
-            if (!service.nameExists(name)){
-                System.out.println("Привычка с таким названием не найдена!");
-            } else {
+            String checkRes = checkName(name);
+            if (checkRes.equals("2")) {
+                return;
+            } else if (checkRes.equals("НАЙДЕНО")) {
                 break;
             }
         }
-    System.out.println(service.markHabit(name));
-}
+        System.out.println(service.markHabit(name));
+    }
+
     //посмотреть статистику:
     public void showStatisticsMenu() {
         System.out.println("""
@@ -334,7 +365,7 @@ public void markHabit(){
                 2. Получить общую статистику
                 3. Назад
                 """);
-        if(service.readUserHabits_filterByCreationDate_earilerLast().isEmpty()){
+        if (service.readUserHabits_filterByCreationDate_earilerLast().isEmpty()) {
             System.out.println("Ни одной привычки не было создано!");
         } else {
             mainLoop:
@@ -357,14 +388,16 @@ public void markHabit(){
             }
         }
     }
-    public void showSingleHabitStats(){
+
+    public void showSingleHabitStats() {
         String name;
+        System.out.println("Введите название привычки, статистику по которой хотите получить");
         while (true) {
-            System.out.println("Введите название привычки, статистику по которой хотите получить");
             name = scanner.nextLine();
-            if (!service.nameExists(name)){
-                System.out.println("Привычка с таким названием не найдена!");
-            } else {
+            String checkRes = checkName(name);
+            if (checkRes.equals("2")) {
+                return;
+            } else if (checkRes.equals("НАЙДЕНО")) {
                 break;
             }
         }
@@ -381,16 +414,16 @@ public void markHabit(){
             String i = scanner.nextLine();
             switch (i) {
                 case "1":
-                    System.out.println("Лучший стрейк:");
-                    System.out.println(statService.findLongestHabitStreak(name, period));
+                    System.out.print("Лучший стрейк: ");
+                    System.out.print(statService.findLongestHabitStreak(name, period));
                     break mainLoop;
                 case "2":
-                    System.out.println("Последний стрейк:");
+                    System.out.print("Последний стрейк: ");
                     System.out.println(statService.findLastHabitStreak(name, period));
                     break mainLoop;
                 case "3":
-                    System.out.println("Выполнение привычки в процентном соотношении:");
-                    System.out.printf("%.2f%n", statService.getHabitCompleteness(name, period)[1]);
+                    System.out.print("Выполнение привычки в процентном соотношении: ");
+                    System.out.printf("%.2f%%n", statService.getHabitCompleteness(name, period)[1]);
                     System.out.println();
                     break mainLoop;
                 case "4":
@@ -408,10 +441,10 @@ public void markHabit(){
         while (true) {
             System.out.println("Введите период, за который хотите получить статитстику (числом) или \"all\", чтобы получить статистику за весь период отслеживания привычки");
             String i = scanner.nextLine();
-            if (i.equals("all")){
+            if (i.equals("all")) {
                 period = -1;
                 break;
-            } else if (isInteger(i)){
+            } else if (isPosInteger(i)) {
                 period = Integer.parseInt(i);
                 break;
             } else {
@@ -421,7 +454,7 @@ public void markHabit(){
         return period;
     }
 
-    public void showOverallStats (){
+    public void showOverallStats() {
         int period = initPeriod();
         System.out.println("""
                 Что хотите просмотреть?
@@ -435,14 +468,17 @@ public void markHabit(){
             String i = scanner.nextLine();
             switch (i) {
                 case "1":
-                    System.out.printf("%.2f%n", (double) statService.formAllHabitsReport(period)[2]);
+                    System.out.print("Общее выполнение привычек в процентном соотношении: ");
+                    System.out.printf("%.2f%%n", (double) statService.formAllHabitsReport(period)[2]);
                     System.out.println();
                     break mainLoop;
                 case "2":
+                    System.out.print("Общее количество выполнения привычек: ");
                     System.out.println((int) statService.formAllHabitsReport(period)[1]);
                     break mainLoop;
                 case "3":
-                    HashMap <String, double[]> report = (HashMap<String, double[]>) statService.formAllHabitsReport(period)[0];
+                    System.out.println("=ОТЧЕТ=");
+                    HashMap<String, double[]> report = (HashMap<String, double[]>) statService.formAllHabitsReport(period)[0];
                     System.out.printf("%-15s %-20s %-25s %-20s %-20s%n", "Название", "Количество отметок", "Количество отметок в процентах", "Длиннейший стрейк", "Текущий стрейк");
                     System.out.println("----------------------------------------------------------------------------------------------------------------");
 
@@ -459,7 +495,7 @@ public void markHabit(){
                         );
                     }
                     System.out.print("Общий процент отметок: ");
-                    System.out.printf("%.2f%n", (double) statService.formAllHabitsReport(period)[2]);
+                    System.out.printf("%.2f%%", (double) statService.formAllHabitsReport(period)[2]);
                     System.out.println();
                     System.out.println("Общее количество отметок: " + (int) statService.formAllHabitsReport(period)[1]);
                     break mainLoop;
@@ -473,10 +509,33 @@ public void markHabit(){
         }
     }
 
-    private boolean isInteger(String str) {
+    private String checkName(String name) {
+        String i;
+        if (!service.nameExists(name)) {
+            System.out.println("Такая привычка не найдена!");
+            System.out.println("Введите 1, если хотите продолжить, или 2, чтобы вернуться назад.");
+            while (true) {
+                i = scanner.nextLine();
+                switch (i) {
+                    case "1":
+                        return i;
+                    case "2":
+                        showSettings();
+                        return i;
+                    default:
+                        System.out.println("Пожалуйста, введите 1 или 2.");
+                        break;
+                }
+            }
+        } else {
+            return "НАЙДЕНО";
+        }
+    }
+
+    private boolean isPosInteger(String str) {
         try {
-            Integer.parseInt(str);
-            return true;
+            int integer = Integer.parseInt(str);
+            return integer > 0;
         } catch (NumberFormatException e) {
             return false;
         }

@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class HabitRepository {
@@ -21,11 +22,20 @@ public class HabitRepository {
     }
 
     public List<Habit> getAllHabits_byUser(User user) {
-       return new ArrayList<>(user.getHabits().values());
+        return new ArrayList<>(user.getHabits().values());
     }
 
     public Habit findHabitByName(String name, User user) {
-        return user.getHabits().get(name);
+        String normalizedName = name.trim().toLowerCase();
+        for (Map.Entry<String, Habit> entry : user.getHabits().entrySet()) {
+            String habitName = entry.getKey().toLowerCase();
+            habitName = habitName.replaceAll("\s+", " ").trim();
+            if (habitName.equals(normalizedName)) {
+                return entry.getValue();
+            }
+        }
+
+        return null;
     }
 
     public void updateHabit_name(String name, Habit habit) {
@@ -41,7 +51,7 @@ public class HabitRepository {
     }
 
 
-    public LinkedHashMap<LocalDate, Boolean> formHabitStatistics(Habit habit){
+    public LinkedHashMap<LocalDate, Boolean> formHabitStatistics(Habit habit) {
         return habit.getStatistics();
     }
 }
