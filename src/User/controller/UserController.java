@@ -42,10 +42,11 @@ public class UserController {
         this.userName = userName;
     }
 
-    public void CREATE_ADMIN (){
+    public void CREATE_ADMIN() {
         service.createUser("admin", "admin@admin.ru", "admin");
         service.readUser_byEmail("admin@admin.ru").setRole(0);
     }
+
     public void showGreetingScreen() {
         while (true) {
             if (!mainPageShown) {
@@ -111,6 +112,7 @@ public class UserController {
         }
         return email;
     }
+
     public String enterEmail_login() {
         String email;
         while (true) {
@@ -120,16 +122,16 @@ public class UserController {
             String state = service.emailCheck(email);
             if (state.equals("Пользователь с таким email уже зарегистрирован!")) {
                 break;
-            } else if (!state.equals("Пожалуйста, введите корректный email!")){
+            } else if (!state.equals("Пожалуйста, введите корректный email!")) {
                 System.out.println("Пользователь с таким email не найден!");
 
-                System.out.println("Нажмите 1, чтобы вернуться в меню, 2, чтобы попробовать еще раз.");
+                System.out.println("Нажмите 1, чтобы попробовать еще раз, 2, чтобы вернуться в меню.");
                 String i = scanner.nextLine();
-                switch (i){
+                switch (i) {
                     case "1":
-                        showGreetingScreen();
                         break;
                     case "2":
+                        showGreetingScreen();
                         break;
                     default:
                         System.out.println("Введите 1 или 2.");
@@ -187,6 +189,7 @@ public class UserController {
             if (Boolean.parseBoolean(loginResults[0].toString())) {
                 userEmail = email;
                 userName = loginResults[1].toString();
+                System.out.println("Авторизируем...");
                 break;
             } else {
                 System.out.println("Введен неверный пароль! Повторите попытку!");
@@ -212,17 +215,18 @@ public class UserController {
             }
         }
     }
-    public void showMainPage_admin(){
+
+    public void showMainPage_admin() {
         System.out.println("Здравствуйте, Администратор!");
         mainLoop:
-        while (true){
+        while (true) {
             System.out.println("""
-                Выберите, что хотите сделать:
-                1. Просмотреть пользователей
-                2. Заблокировать пользователя
-                3. Удалить пользователя
-                4. Выйти из аккаунта
-                """);
+                    Выберите, что хотите сделать:
+                    1. Просмотреть пользователей
+                    2. Заблокировать пользователя
+                    3. Удалить пользователя
+                    4. Выйти из аккаунта
+                    """);
             String i = scanner.nextLine();
             switch (i) {
                 case "1":
@@ -234,7 +238,7 @@ public class UserController {
                         users.remove(service.readUser_byEmail("admin@admin.ru"));
                         int num = 1;
                         for (User user : users) {
-                            System.out.println(num+". "+user.getName()+", "+user.getEmail()+", активен"+user.isActive());
+                            System.out.println(num + ". " + user.getName() + ", " + user.getEmail() + ", активен=" + user.isActive());
                         }
                     }
                     break;
@@ -243,7 +247,7 @@ public class UserController {
                         System.out.println("Ни одного пользователя не создано!");
                     } else {
                         System.out.println("Введите email пользователя, которого хотите заблокировать.");
-                        String email = scanner.nextLine(); //TODO спросить подтверждение
+                        String email = scanner.nextLine();
                         service.readUser_byEmail(email).setActive(false);
                         System.out.println("Успешно");
                     }
@@ -253,7 +257,7 @@ public class UserController {
                         System.out.println("Ни одного пользователя не создано!");
                     } else {
                         System.out.println("Введите email пользователя, которого хотите удалить.");
-                        String email = scanner.nextLine(); //TODO спросить подтверждение
+                        String email = scanner.nextLine();
                         service.deleteUser_byEmail(email);
                         System.out.println("Успешно");
                     }
@@ -375,7 +379,7 @@ public class UserController {
             String res = service.updateUser_changeName(updatedValue, userEmail);
             if (res.equals(updatedValue)) {
                 userEmail = updatedValue;
-                System.out.println(updatedValue+", имя изменено успешно!");
+                System.out.println(updatedValue + ", имя изменено успешно!");
                 break;
             } else {
                 System.out.println(res);
@@ -405,6 +409,7 @@ public class UserController {
             }
         }
     }
+
     public void goToHabitController(User user) {
         HabitRepository habitRepository = new HabitRepository();
         HabitService habitService = new HabitService(habitRepository, user, this.service);

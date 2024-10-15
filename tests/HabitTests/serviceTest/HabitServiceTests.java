@@ -3,17 +3,11 @@ package HabitTests.serviceTest;
 import Habit.model.Habit;
 import Habit.repository.HabitRepository;
 import Habit.service.HabitService;
-//import User.controller.UserController;
 import User.model.User;
 import User.repository.UserRepository;
 import User.service.UserService;
 import org.junit.Test;
-import org.mockito.verification.Timeout;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.PrintStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -21,10 +15,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.timeout;
 
-public class HabitServiceTest {
+public class HabitServiceTests {
     HabitRepository repo = new HabitRepository();
     User user = new User("anya", "anya@ya.ru", "1234", 1);
     UserService userService = new UserService(user, new UserRepository());
@@ -47,7 +39,7 @@ public class HabitServiceTest {
     public void createHabit_duplicateName() {
         service.createHabit("Пить воду", "", Habit.Frequency.DAILY);
         Habit created = repo.findHabitByName("Пить воду", this.user);
-        String res = service.createHabit("Пить воду", "", Habit.Frequency.DAILY);
+        service.createHabit("Пить воду", "", Habit.Frequency.DAILY);
 
         assertTrue(user.getHabits().containsKey(created.getName()));
     }
@@ -99,6 +91,7 @@ public class HabitServiceTest {
         assertEquals(expectedMessage, res);
         assertEquals("Вода вкусная", updated.getDescription());
     }
+
     @Test
     public void descriptionUpdate_tooLong() {
         service.createHabit("Пить воду", "", Habit.Frequency.DAILY);
@@ -109,6 +102,7 @@ public class HabitServiceTest {
         assertEquals(expectedMessage, res);
         assertEquals("", updated.getDescription());
     }
+
     @Test
     public void basicFrequencyUpdate() {
         service.createHabit("Пить воду", "", Habit.Frequency.DAILY);
@@ -130,11 +124,11 @@ public class HabitServiceTest {
         repo.addHabit(habit2);
         user.getHabits().put(habit2.getName(), habit2);
 
-       List<Habit> expected = new ArrayList<>();
-       expected.add(habit1);
-       expected.add(habit2);
+        List<Habit> expected = new ArrayList<>();
+        expected.add(habit1);
+        expected.add(habit2);
 
-       List<Habit> res = service.readUserHabits_filterByCreationDate_earilerFirst();
+        List<Habit> res = service.readUserHabits_filterByCreationDate_earilerFirst();
 
         assertEquals(expected, res);
     }
@@ -196,6 +190,7 @@ public class HabitServiceTest {
         assertEquals(expectedMessage, res);
         assertEquals(expectedStat, markedHabit.getStatistics());
     }
+
     @Test
     public void markHabit_twiceAWeek() {
         service.createHabit("Пить воду", "", Habit.Frequency.WEEKLY);
@@ -214,6 +209,7 @@ public class HabitServiceTest {
         assertEquals(expectedMessage, res);
         assertEquals(expectedStat, markedHabit.getStatistics());
     }
+
     @Test
     public void markHabit_twiceAFortnight() {
         service.createHabit("Пить воду", "", Habit.Frequency.FORTNIGHTLY);
@@ -232,6 +228,7 @@ public class HabitServiceTest {
         assertEquals(expectedMessage, res);
         assertEquals(expectedStat, markedHabit.getStatistics());
     }
+
     @Test
     public void markHabit_twiceInAThreeWeeks() {
         service.createHabit("Пить воду", "", Habit.Frequency.EVERYTHREEWEEKS);
@@ -269,6 +266,7 @@ public class HabitServiceTest {
         assertEquals(expectedMessage, res);
         assertEquals(expectedStat, markedHabit.getStatistics());
     }
+
     @Test
     public void markHabit_forTwoDays() {
         service.createHabit("Пить воду", "", Habit.Frequency.DAILY);
@@ -302,7 +300,7 @@ public class HabitServiceTest {
         service.markHabit("Пить воду");
         habit2.getStatistics().put(LocalDate.now(), false);
 
-        LinkedHashMap<String, LocalDate> expected = new   LinkedHashMap<>();
+        LinkedHashMap<String, LocalDate> expected = new LinkedHashMap<>();
         expected.put(habit1.getName(), LocalDate.now());
         expected.put(habit2.getName(), null);
 
@@ -310,6 +308,7 @@ public class HabitServiceTest {
 
         assertEquals(expected, res);
     }
+
     @Test
     public void sortStatus_Later() throws InterruptedException {
         Habit habit1 = new Habit("Пить воду", "", LocalDateTime.now(), Habit.Frequency.DAILY, this.user);
@@ -323,7 +322,7 @@ public class HabitServiceTest {
         service.markHabit("Пить воду");
         habit2.getStatistics().put(LocalDate.now(), false);
 
-        LinkedHashMap<String, LocalDate> expected = new   LinkedHashMap<>();
+        LinkedHashMap<String, LocalDate> expected = new LinkedHashMap<>();
         expected.put(habit2.getName(), null);
         expected.put(habit1.getName(), LocalDate.now());
 

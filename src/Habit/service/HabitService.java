@@ -31,7 +31,10 @@ public class HabitService {
     }
 
     public boolean nameExists(String name) {
-        return user.getHabits().containsKey(name);
+        String normalizedName = name.toLowerCase().replaceAll("\s+", " ").trim();
+        return user.getHabits().keySet().stream()
+                .map(String::toLowerCase)
+                .anyMatch(existingName -> existingName.equals(normalizedName));
     }
 
     public String updateHabit_name(String newName, String oldName) {//это все не должно быть уникальным вообще, но уникальным в границах юзера
@@ -75,6 +78,7 @@ public class HabitService {
         List<Habit> habits = repository.getAllHabits_byUser(this.user);
         return sortHabitsByCreation(habits, false);
     }
+
     public List<Habit> sortHabitsByCreation(List<Habit> habits, boolean ascending) {
 
         habits.sort(Comparator.comparing(Habit::getCreatedAt));
@@ -97,6 +101,7 @@ public class HabitService {
         }
         return latestDate;
     }
+
     public LinkedHashMap<String, LocalDate> sortHabits_marked(boolean earlier) {
         List<Habit> habits = repository.getAllHabits_byUser(this.user);
         LinkedHashMap<String, LocalDate> habitsSorted = new LinkedHashMap<>();
@@ -114,7 +119,7 @@ public class HabitService {
         habitsWithDates.sort((h1, h2) -> {
             LocalDate date1 = getLatestTrueDate(h1);
             LocalDate date2 = getLatestTrueDate(h2);
-            if (earlier){
+            if (earlier) {
                 return date2.compareTo(date1);
             } else {
                 return date1.compareTo(date2);
@@ -135,6 +140,7 @@ public class HabitService {
 
         return habitsSorted;
     }
+
     public String deleteHabit(String deletingName) {
         List<Habit> habits = repository.getAllHabits_byUser(this.user);
         Habit deleting = repository.findHabitByName(deletingName, this.user);
@@ -159,6 +165,7 @@ public class HabitService {
             boolean doMark = true;
 
             String sentenceEnd = "сегодня";
+            LocalDate minused;
             switch (frequency) {
                 case DAILY:
                     if (today.isEqual(lastDate)) {
@@ -166,7 +173,7 @@ public class HabitService {
                     }
                     break;
                 case WEEKLY:
-                    LocalDate minused = today.minusWeeks(1);
+                    minused = today.minusWeeks(1);
                     if (!lastDate.isBefore(minused)) {
                         doMark = false;
                         sentenceEnd = "на этой неделе";

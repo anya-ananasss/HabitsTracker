@@ -24,17 +24,25 @@ public class UserRepository {
         return emails;
     }
 
-    public boolean addEmail(String email){
+    public boolean addEmail(String email) {
         return emails.add(email);
     }
-    public boolean addUser(User user){
+
+    public boolean addUser(User user) {
         return users.add(user);
     }
 
     public User readUser_byEmail(String email) {
-        return users.stream().filter(user -> Objects.equals(user.getEmail(), email)).findAny().orElse(null);
+        String normalizedEmail = email.toLowerCase().replaceAll("\s+", " ").trim();
+
+        return users.stream()
+                .filter(user ->
+                        Objects.equals(user.getEmail().toLowerCase().replaceAll("\s+", " ").trim(), normalizedEmail))
+                .findAny()
+                .orElse(null);
     }
-    public void deleteUser_byEmail (String email){
+
+    public void deleteUser_byEmail(String email) {
         users.remove(readUser_byEmail(email));
         emails.remove(email);
     }
