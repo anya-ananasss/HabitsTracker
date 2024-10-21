@@ -1,0 +1,95 @@
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+    <changeSet id="create-role-mapping-table" author="Gureva Anna">
+        <createTable tableName="role_mapping" schemaName="main">
+            <column name="id" type="INT" defaultValueComputed="nextval('main.role_mapping_id_seq')">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="role" type="VARCHAR(10)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="create-users-table" author="Gureva Anna">
+        <createTable tableName="users" schemaName="main">
+            <column name="id" type="BIGINT" defaultValueComputed="nextval('main.user_id_seq')">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="password" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role_id" type="INT">
+                <constraints nullable="false" foreignKeyName="fk_user_role" references="main.role_mapping(id)"
+                             deleteCascade="true"/>
+            </column>
+            <column name="is_active" type="BOOLEAN" defaultValue="TRUE">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="create-habits-table" author="Gureva Anna">
+        <createTable tableName="habits" schemaName="main">
+            <column name="name" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_user_id" references="main.users(id)"
+                             deleteCascade="true"/>
+            </column>
+            <column name="frequency" type="VARCHAR(15)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="create-habit-table-pk" author="Gureva Anna">
+        <addPrimaryKey columnNames="name, user_id" tableName="habits" schemaName="main" constraintName="pk_habits"/>
+    </changeSet>
+
+    <changeSet id="create-habit-stats-table" author="Gureva Anna">
+        <createTable tableName="habit_stats" schemaName="main">
+            <column name="habit_name" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="mark" type="BOOLEAN" defaultValue="FALSE">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+    </changeSet>
+
+    <changeSet id="create-habit-stats-table-fk-pk" author="Gureva Anna">
+        <addForeignKeyConstraint baseTableSchemaName="main" baseTableName="habit_stats"
+                                 baseColumnNames="habit_name, user_id"
+                                 constraintName="fk_habit_stats"
+                                 referencedTableSchemaName="main" referencedTableName="habits"
+                                 referencedColumnNames="name, user_id" deleteCascade="true" onUpdate="CASCADE"/>
+        <addPrimaryKey columnNames="habit_name, user_id, date" tableName="habit_stats" schemaName="main"
+                       constraintName="pk_habit_stats"/>
+    </changeSet>
+
+</databaseChangeLog>

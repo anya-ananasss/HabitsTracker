@@ -1,9 +1,9 @@
 package UserTests.controllerTest;
 
-import User.controller.UserController;
-import User.repository.UserRepository;
-import User.service.UserService;
-import User.model.User;
+import controllers.UserController;
+import repositories.UserRepository;
+import services.UserService;
+import models.User;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;

@@ -1,14 +1,14 @@
 package HabitTests.controllerTest;
 
-import Habit.controller.HabitController;
-import Habit.model.Habit;
-import Habit.repository.HabitRepository;
-import Habit.service.HabitService;
-import Habit.service.HabitStatisticsService;
-import User.controller.UserController;
-import User.model.User;
-import User.repository.UserRepository;
-import User.service.UserService;
+import controllers.HabitController;
+import models.Habit;
+import repositories.HabitRepository;
+import services.HabitService;
+import services.HabitStatisticsService;
+import controllers.UserController;
+import models.User;
+import repositories.UserRepository;
+import services.UserService;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -132,11 +132,11 @@ public class HabitControllerTests {
         ByteArrayOutputStream outContent = new ByteArrayOutputStream();
         System.setOut(new PrintStream(outContent));
 
-        Habit habit1 = new Habit("Пить воду", "", LocalDateTime.now(), Habit.Frequency.DAILY, this.user);
+        Habit habit1 = new Habit("Пить воду", "", LocalDateTime.now(), this.user, Habit.Frequency.DAILY);
         repo.addHabit(habit1);
         user.getHabits().put(habit1.getName(), habit1);
         Thread.sleep(5000);
-        Habit habit2 = new Habit("Вставать в 5 утра", "", LocalDateTime.now(), Habit.Frequency.DAILY, this.user);
+        Habit habit2 = new Habit("Вставать в 5 утра", "", LocalDateTime.now(), this.user, Habit.Frequency.DAILY);
         repo.addHabit(habit2);
         user.getHabits().put(habit2.getName(), habit2);
 
@@ -172,11 +172,11 @@ public class HabitControllerTests {
         ByteArrayOutputStream outContent = new ByteArrayOutputStream();
         System.setOut(new PrintStream(outContent));
 
-        Habit habit1 = new Habit("Пить воду", "", LocalDateTime.now(), Habit.Frequency.DAILY, this.user);
+        Habit habit1 = new Habit("Пить воду", "", LocalDateTime.now(), this.user, Habit.Frequency.DAILY);
         repo.addHabit(habit1);
         user.getHabits().put(habit1.getName(), habit1);
         Thread.sleep(5000);
-        Habit habit2 = new Habit("Вставать в 5 утра", "", LocalDateTime.now(), Habit.Frequency.DAILY, this.user);
+        Habit habit2 = new Habit("Вставать в 5 утра", "", LocalDateTime.now(), this.user, Habit.Frequency.DAILY);
         repo.addHabit(habit2);
         user.getHabits().put(habit2.getName(), habit2);
 
@@ -214,11 +214,11 @@ public class HabitControllerTests {
         System.setOut(new PrintStream(outContent));
 
 
-        Habit habit1 = new Habit("Пить воду", "", LocalDateTime.now(), Habit.Frequency.DAILY, this.user);
+        Habit habit1 = new Habit("Пить воду", "", LocalDateTime.now(), this.user, Habit.Frequency.DAILY);
         repo.addHabit(habit1);
         user.getHabits().put(habit1.getName(), habit1);
         Thread.sleep(5000);
-        Habit habit2 = new Habit("Вставать в 5 утра", "", LocalDateTime.now(), Habit.Frequency.DAILY, this.user);
+        Habit habit2 = new Habit("Вставать в 5 утра", "", LocalDateTime.now(), this.user, Habit.Frequency.DAILY);
         repo.addHabit(habit2);
         user.getHabits().put(habit2.getName(), habit2);
 
@@ -268,11 +268,11 @@ public class HabitControllerTests {
         System.setOut(new PrintStream(outContent));
 
 
-        Habit habit1 = new Habit("Пить воду", "", LocalDateTime.now(), Habit.Frequency.DAILY, this.user);
+        Habit habit1 = new Habit("Пить воду", "", LocalDateTime.now(), this.user, Habit.Frequency.DAILY);
         repo.addHabit(habit1);
         user.getHabits().put(habit1.getName(), habit1);
         Thread.sleep(5000);
-        Habit habit2 = new Habit("Вставать в 5 утра", "", LocalDateTime.now(), Habit.Frequency.DAILY, this.user);
+        Habit habit2 = new Habit("Вставать в 5 утра", "", LocalDateTime.now(), this.user, Habit.Frequency.DAILY);
         repo.addHabit(habit2);
         user.getHabits().put(habit2.getName(), habit2);
 
@@ -322,11 +322,11 @@ public class HabitControllerTests {
         System.setOut(new PrintStream(outContent));
 
 
-        Habit habit1 = new Habit("Пить воду", "", LocalDateTime.now(), Habit.Frequency.DAILY, this.user);
+        Habit habit1 = new Habit("Пить воду", "", LocalDateTime.now(), this.user, Habit.Frequency.DAILY);
         repo.addHabit(habit1);
         user.getHabits().put(habit1.getName(), habit1);
         Thread.sleep(5000);
-        Habit habit2 = new Habit("Вставать в 5 утра", "", LocalDateTime.now(), Habit.Frequency.DAILY, this.user);
+        Habit habit2 = new Habit("Вставать в 5 утра", "", LocalDateTime.now(), this.user, Habit.Frequency.DAILY);
         repo.addHabit(habit2);
         user.getHabits().put(habit2.getName(), habit2);
 

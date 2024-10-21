@@ -1,0 +1,19 @@
+services:
+  app:
+    build: .
+    restart: always
+    depends_on:
+     - tracker_app_database
+  tracker_app_database:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: newAdmin
+      POSTGRES_PASSWORD: 5678
+      POSTGRES_DB: tracker_app_database
+    volumes:
+      - tracker-app-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+volumes:
+  tracker-app-data:

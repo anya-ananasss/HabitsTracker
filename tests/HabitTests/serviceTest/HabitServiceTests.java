@@ -1,11 +1,11 @@
 package HabitTests.serviceTest;
 
-import Habit.model.Habit;
-import Habit.repository.HabitRepository;
-import Habit.service.HabitService;
-import User.model.User;
-import User.repository.UserRepository;
-import User.service.UserService;
+import models.Habit;
+import repositories.HabitRepository;
+import services.HabitService;
+import models.User;
+import repositories.UserRepository;
+import services.UserService;
 import org.junit.Test;
 
 import java.time.LocalDate;
