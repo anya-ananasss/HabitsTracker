@@ -16,16 +16,16 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
-public class HabitStatisticsServiceTest {
+public class HabitStatisticsServiceTests {
     HabitRepository repo = new HabitRepository();
     User user = new User("anya", "anya@ya.ru", "1234", 1);
     UserService userService = new UserService(user, new UserRepository());
     HabitService service = new HabitService(repo, user, userService);
     HabitStatisticsService habitStatisticsService = new HabitStatisticsService(repo, user);
 
-    public User createUser() {
+    public void createUser() {
         userService.createUser("anya", "anya@ya.ru", "1234");
-        return userService.readUser_byEmail("anya@ya.ru");
+        userService.readUser_byEmail("anya@ya.ru");
     }
 
     public LinkedHashMap<LocalDate, Boolean> createWeekStreak_dailyHabit(String name) {
@@ -69,7 +69,7 @@ public class HabitStatisticsServiceTest {
             before = before.plusDays(1);
             if (i % 2 == 0) {
                 marked.getStatistics().put(before, true);
-            } else{
+            } else {
                 marked.getStatistics().put(before, false);
             }
         }
@@ -77,7 +77,7 @@ public class HabitStatisticsServiceTest {
     }
 
     @Test
-    public void formStatistics (){
+    public void formStatistics() {
         LinkedHashMap<LocalDate, Boolean> expected = createWeekStreak_dailyHabit("Пить воду");
         LinkedHashMap<LocalDate, Boolean> actual = habitStatisticsService.formStatistics("Пить воду");
         assertEquals(expected, actual);
@@ -85,7 +85,7 @@ public class HabitStatisticsServiceTest {
 
 
     @Test
-    public void findLongestStreak_daily (){
+    public void findLongestStreak_daily() {
         int expected = 8;
         service.createHabit("Пить воду", "", Habit.Frequency.DAILY);
         Habit habit = repo.findHabitByName("Пить воду", this.user);
@@ -93,8 +93,9 @@ public class HabitStatisticsServiceTest {
         int actual = habitStatisticsService.findLongestHabitStreak(habit.getName(), -1);
         assertEquals(expected, actual);
     }
+
     @Test
-    public void findLastStreak_streakWeek_daily (){
+    public void findLastStreak_streakWeek_daily() {
         int expected = 8;
         service.createHabit("Пить воду", "", Habit.Frequency.DAILY);
         Habit habit = repo.findHabitByName("Пить воду", this.user);
@@ -102,8 +103,9 @@ public class HabitStatisticsServiceTest {
         int actual = habitStatisticsService.findLastHabitStreak(habit.getName(), -1);
         assertEquals(expected, actual);
     }
+
     @Test
-    public void findLongestStreak_weekly (){
+    public void findLongestStreak_weekly() {
         int expected = 3;
         service.createHabit("Пить воду", "", Habit.Frequency.WEEKLY);
         Habit habit = repo.findHabitByName("Пить воду", this.user);
@@ -111,8 +113,9 @@ public class HabitStatisticsServiceTest {
         int actual = habitStatisticsService.findLongestHabitStreak(habit.getName(), -1);
         assertEquals(expected, actual);
     }
+
     @Test
-    public void findLastStreak_streakWeek_weekly (){
+    public void findLastStreak_streakWeek_weekly() {
         int expected = 3;
         service.createHabit("Пить воду", "", Habit.Frequency.DAILY);
         Habit habit = repo.findHabitByName("Пить воду", this.user);
@@ -120,8 +123,9 @@ public class HabitStatisticsServiceTest {
         int actual = habitStatisticsService.findLastHabitStreak(habit.getName(), -1);
         assertEquals(expected, actual);
     }
+
     @Test
-    public void findLongestStreak_daily_incons (){
+    public void findLongestStreak_daily_incons() {
         int expected = 2;//за счет того, что один элемент статистики добавляется вне цикла
         service.createHabit("Пить воду", "", Habit.Frequency.DAILY);
         Habit habit = repo.findHabitByName("Пить воду", this.user);
@@ -129,8 +133,9 @@ public class HabitStatisticsServiceTest {
         int actual = habitStatisticsService.findLongestHabitStreak(habit.getName(), -1);
         assertEquals(expected, actual);
     }
+
     @Test
-    public void findLastStreak_streakWeek_daily_incons (){
+    public void findLastStreak_streakWeek_daily_incons() {
         int expected = 1;
         service.createHabit("Пить воду", "", Habit.Frequency.DAILY);
         Habit habit = repo.findHabitByName("Пить воду", this.user);
@@ -138,8 +143,9 @@ public class HabitStatisticsServiceTest {
         int actual = habitStatisticsService.findLastHabitStreak(habit.getName(), -1);
         assertEquals(expected, actual);
     }
+
     @Test
-    public void getHabitCompleteness_streak1(){
+    public void getHabitCompleteness_streak1() {
         double expected = 100.0;
         service.createHabit("Пить воду", "", Habit.Frequency.DAILY);
         Habit habit = repo.findHabitByName("Пить воду", this.user);
@@ -151,7 +157,7 @@ public class HabitStatisticsServiceTest {
     }
 
     @Test
-    public void getHabitCompleteness_streak2(){
+    public void getHabitCompleteness_streak2() {
         double expected = 100.0;
         service.createHabit("Пить воду", "", Habit.Frequency.DAILY);
         Habit habit = repo.findHabitByName("Пить воду", this.user);
@@ -161,8 +167,9 @@ public class HabitStatisticsServiceTest {
 
         assertEquals(expected, actual, 0.01);
     }
+
     @Test
-    public void getHabitCompleteness_streak3(){
+    public void getHabitCompleteness_streak3() {
         double expected = 100.0;
         service.createHabit("Пить воду", "", Habit.Frequency.DAILY);
         Habit habit = repo.findHabitByName("Пить воду", this.user);
@@ -174,7 +181,7 @@ public class HabitStatisticsServiceTest {
     }
 
     @Test
-    public void getHabitCompleteness_incons_allperiod(){
+    public void getHabitCompleteness_incons_allperiod() {
         double expected = 62.5;
         service.createHabit("Пить воду", "", Habit.Frequency.DAILY);
         Habit habit = repo.findHabitByName("Пить воду", this.user);
@@ -185,8 +192,9 @@ public class HabitStatisticsServiceTest {
 
         assertEquals(expected, actual, 0.01);
     }
+
     @Test
-    public void getHabitCompleteness_incons_5lastDays(){
+    public void getHabitCompleteness_incons_5lastDays() {
         double expected = 60.0;
         service.createHabit("Пить воду", "", Habit.Frequency.DAILY);
         Habit habit = repo.findHabitByName("Пить воду", this.user);
@@ -198,16 +206,16 @@ public class HabitStatisticsServiceTest {
     }
 
     @Test
-    public void formAllHabitsReport_allPeriod(){
+    public void formAllHabitsReport_allPeriod() {
 
 
         Object[] expected = new Object[3];
         Map<String, double[]> report = new HashMap<>();
         report.put("Вставать в 5 утра", new double[]{5.0, 62.5, 2.0, 1.0});
         report.put("Пить воду", new double[]{8.0, 100.0, 8.0, 8.0});
-        expected[0]=report;
-        expected[1]=13;
-        expected[2]=81.25;
+        expected[0] = report;
+        expected[1] = 13;
+        expected[2] = 81.25;
 
         service.createHabit("Пить воду", "", Habit.Frequency.DAILY);
         Habit habit1 = repo.findHabitByName("Пить воду", this.user);
@@ -234,15 +242,16 @@ public class HabitStatisticsServiceTest {
 
         assertEquals((double) expected[2], (double) actual[2], 0.01);
     }
+
     @Test
-    public void formAllHabitsReport_5lastDays(){
+    public void formAllHabitsReport_5lastDays() {
         Object[] expected = new Object[3];
         Map<String, double[]> report = new HashMap<>();
         report.put("Вставать в 5 утра", new double[]{3.0, 60.0, 1.0, 1.0});
         report.put("Пить воду", new double[]{5.0, 100.0, 5.0, 5.0});
-        expected[0]=report;
-        expected[1]=8;
-        expected[2]=80.0;
+        expected[0] = report;
+        expected[1] = 8;
+        expected[2] = 80.0;
 
         service.createHabit("Пить воду", "", Habit.Frequency.DAILY);
         Habit habit1 = repo.findHabitByName("Пить воду", this.user);

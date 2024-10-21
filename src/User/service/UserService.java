@@ -28,12 +28,11 @@ public class UserService {
     private final UserRepository repository;
     private final byte[] salt = generateSalt();
 
-    public boolean createUser(String name, String email, String password) {
+    public void createUser(String name, String email, String password) {
         String encryptedPass = encrypt(password);
-        User user = new User(name, email, encryptedPass, 1);
+        User user = new User(name, email.toLowerCase(), encryptedPass, 1);
         repository.addUser(user);
         repository.addEmail(email);
-        return true;
     }
 
 
@@ -98,7 +97,11 @@ public class UserService {
         if (!isEmailValid(email)) {
             return "Пожалуйста, введите корректный email!";
         } else {
-            if (repository.getEmails().contains(email)) {
+            String normalizedEmail = email.toLowerCase();
+            boolean emailExists = repository.getEmails().stream()
+                    .map(String::toLowerCase)
+                    .anyMatch(existingEmail -> existingEmail.equals(normalizedEmail));
+            if (emailExists) {
                 return "Пользователь с таким email уже зарегистрирован!";
             }
         }
@@ -113,7 +116,7 @@ public class UserService {
     }
 
     public String updateUser_changeName(String newName, String email){
-        User user = repository.readUser_byEmail(email); //по логике проверка на нул не нужна (авторизированный пользователь)
+        User user = repository.readUser_byEmail(email);
         String res = nameCheck(newName);
         if (res.equals(newName)){
             user.setName(newName);
@@ -151,8 +154,9 @@ public class UserService {
     public User readUser_byEmail(String email){ //с ридхэбит то же самое сделать
         return repository.readUser_byEmail(email);
     }
-    public Set<User> getAllUsers(){
-        return  repository.getUsers();
+
+    public Set<User> getAllUsers() {
+        return repository.getUsers();
     }
 
 }

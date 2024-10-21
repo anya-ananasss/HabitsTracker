@@ -2,6 +2,7 @@ package UserTests.serviceTests;
 
 
 import User.controller.UserController;
+import User.model.User;
 import User.repository.UserRepository;
 import User.service.UserService;
 import org.junit.Test;
@@ -10,6 +11,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -17,6 +20,21 @@ import static org.junit.Assert.*;
 public class UserServiceTest {
     UserRepository repo = new UserRepository();
     UserService service = new UserService(repo);
+
+    @Test
+    public void getAllUsers() {
+        User user1 = new User("anya1", "an1@ya.ru", "1234", 1);
+        User user2 = new User("anya2", "an2@ya.ru", "5678", 1);
+        repo.addUser(user1);
+        repo.addUser(user2);
+
+        Set<User> test = new HashSet<>();
+        test.add(user1);
+        test.add(user2);
+
+        assertEquals(test, service.getAllUsers());
+    }
+
     @Test
     public void blankName() {
         String expectedMessage = "Имя не может быть пустым! Пожалуйста, введите имя!";
@@ -131,6 +149,6 @@ public class UserServiceTest {
         assertTrue(controller.getUserName().contentEquals(expectedNameEmail));
         System.setOut(System.out);
         System.setIn(System.in);
-
     }
+
 }
