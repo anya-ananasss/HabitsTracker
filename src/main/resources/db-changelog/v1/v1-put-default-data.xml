@@ -58,7 +58,6 @@
             <column name="habit_name" value="пить воду"/>
             <column name="user_id" value="2"/>
             <column name="date" value="2024-10-16"/>
-            <column name="mark" value="TRUE"/>
         </insert>
     </changeSet>
 
@@ -67,6 +66,7 @@
             <column name="habit_name" value="пить воду"/>
             <column name="user_id" value="2"/>
             <column name="date" value="2024-10-17"/>
+            <column name="mark" value="true"/>
         </insert>
     </changeSet>
 
@@ -75,7 +75,7 @@
             <column name="habit_name" value="пить воду"/>
             <column name="user_id" value="2"/>
             <column name="date" value="2024-10-18"/>
-            <column name="mark" value="TRUE"/>
+            <column name="mark" value="true"/>
         </insert>
     </changeSet>
 

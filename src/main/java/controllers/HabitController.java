@@ -5,6 +5,8 @@ import serviceClasses.Constants;
 import services.HabitService;
 import services.HabitStatisticsService;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -20,18 +22,21 @@ public class HabitController {
     /**
      * Конструктор для создания контроллера с заданными сервисами по управлению привычками, статистикой привычек
      * и ссылкой на контроллер пользователя, привычки которого рассматриваются.
+     *
      * @param service сервис с бизнес-логикой для User
      */
-    public HabitController(HabitService service, HabitStatisticsService statService, UserController userController) {
+    public HabitController(HabitService service, HabitStatisticsService statService, UserController userController, Connection connection) {
         this.service = service;
         this.statService = statService;
         this.userController = userController;
+        this.connection = connection;
     }
 
     private final Scanner scanner = new Scanner(System.in);
     private final HabitService service;
     private final HabitStatisticsService statService;
     private final UserController userController;
+    private final Connection connection;
 
     /**
      * Показывает главное меню для управления привычками.
@@ -180,7 +185,13 @@ public class HabitController {
                 String description = scanner.nextLine();
                 System.out.println("Введите желаемую частоту выполнения привычки: ежедневно, еженедельно, раз в две недели, раз в три недели, ежемесячно.");
                 Habit.Frequency frequency = setFrequency();
-                System.out.println(service.createHabit(name, description, frequency));
+                try {
+                    String res = service.createHabit(name, description, frequency);
+                    System.out.println(res);
+                    this.connection.commit();
+                } catch (SQLException e) {
+                    System.out.println("Ошибка! " + e);
+                }
                 break;
             }
         }
@@ -212,7 +223,13 @@ public class HabitController {
                     while (true) {
                         System.out.println("Введите новое название.");
                         String newName = scanner.nextLine();
-                        String res = service.updateName(newName, name);
+                        String res = "";
+                        try {
+                            res = service.updateName(newName, name);
+                            this.connection.commit();
+                        } catch (SQLException e) {
+                            System.out.println("Ошибка! " + e);
+                        }
                         System.out.println(res);
                         if (res.equals("Успешно обновлено!")) {
                             break;
@@ -226,7 +243,13 @@ public class HabitController {
                     while (true) {
                         System.out.println("Введите новое описание.");
                         String newDescription = scanner.nextLine();
-                        String res = service.updateDescription(newDescription, name);
+                        String res = "";
+                        try {
+                            res = service.updateDescription(newDescription, name);
+                            this.connection.commit();
+                        } catch (SQLException e) {
+                            System.out.println("Ошибка! " + e);
+                        }
                         System.out.println(res);
                         if (res.equals("Описание обновлено!")) {
                             break;
@@ -239,7 +262,12 @@ public class HabitController {
                 case "3" -> {
                     System.out.println("Введите новую частоту: ежедневно, еженедельно, раз в две недели, раз в три недели или ежемесячно.");
                     Habit.Frequency frequency = setFrequency();
-                    System.out.println(service.updateFrequency(frequency, name));
+                    try {
+                        System.out.println(service.updateFrequency(frequency, name));
+                        this.connection.commit();
+                    } catch (SQLException e) {
+                        System.out.println("Ошибка! " + e);
+                    }
                     break loop1;
                 }
                 case "4" -> showSettings();
@@ -288,11 +316,17 @@ public class HabitController {
                 }
             }
             while (true) {
-                System.out.println("Вы действительно хотите удалить привычку " + name + "? Это действие невозможно отменить! да/нет");
+                System.out.println("Вы действительно хотите удалить привычку " + name.substring(0, 1).toUpperCase() + name.substring(1) +
+                        "? Это действие невозможно отменить! да/нет");
                 String i = scanner.nextLine();
                 switch (i) {
                     case "да" -> {
                         service.deleteHabit(name);
+                        try {
+                            connection.commit();
+                        } catch (SQLException e) {
+                            System.out.println("Ошибка! " + e);
+                        }
                         System.out.println("Успешно удалено.");
                         break main;
                     }
@@ -308,6 +342,7 @@ public class HabitController {
 
     /**
      * Устанавливает частоту из перечисления в соответствии с переданной строкой.
+     *
      * @return установленная частота из перечисления.
      */
     private Habit.Frequency setFrequency() {
@@ -357,7 +392,15 @@ public class HabitController {
                 break;
             }
         }
-        System.out.println(service.markHabit(name));
+        String res = service.markHabit(name);
+        System.out.println(res);
+        if (res.equals("Отметка проставлена!")) {
+            try {
+                this.connection.commit();
+            } catch (SQLException e) {
+                System.out.println("Ошибка! " + e);
+            }
+        }
     }
 
     /**
@@ -441,6 +484,7 @@ public class HabitController {
 
     /**
      * Задает период (положительное целое число) для просмотра статистики.
+     *
      * @return int период для просмотра статистики; -1, если нужно просмотреть статистику за все время
      */
     public int initPeriod() {
@@ -515,6 +559,7 @@ public class HabitController {
     /**
      * Проверяет, существует ли привычка с заданным названием, если нет - предлагает повторить ввод или вернуться
      * в меню настроек.
+     *
      * @param name название привычки, которое нужно проверить
      * @return "НАЙДЕНО" - сообщение об успешном нахождении привычки с заданным названием; если таковой не находится,
      * пользователь выходит в меню настроек.

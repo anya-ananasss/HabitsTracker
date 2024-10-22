@@ -47,23 +47,19 @@ public class HabitRepository {
      * @param frequency   частота выполнения привычки
      * @see UserRepository
      */
-    public void addHabit(String name, String description, LocalDateTime createdAt, User user, Habit.Frequency frequency) {
+    public void addHabit(String name, String description, LocalDateTime createdAt, User user, Habit.Frequency frequency) throws SQLException {
         name = name.toLowerCase().replaceAll("\\s+", " ").trim();
         int userId = userRepository.findUserIdByEmail(user.getEmail());
         String sql = "INSERT INTO main.habits (name, description, created_at, user_id, frequency) VALUES (?, ?, ?, ?, ?)";
 
-        try (PreparedStatement statement = this.connection.prepareStatement(sql)) {
-            statement.setString(1, name);
-            statement.setString(2, description);
-            statement.setTimestamp(3, Timestamp.valueOf(createdAt));
-            statement.setInt(4, userId);
-            statement.setString(5, frequency.toString());
+        PreparedStatement statement = this.connection.prepareStatement(sql);
+        statement.setString(1, name);
+        statement.setString(2, description);
+        statement.setTimestamp(3, Timestamp.valueOf(createdAt));
+        statement.setInt(4, userId);
+        statement.setString(5, frequency.toString());
 
-            statement.executeUpdate();
-            this.connection.commit();
-        } catch (SQLException e) {
-            System.out.println("Ошибка! " + e);
-        }
+        statement.executeUpdate();
     }
 
     /**
@@ -146,7 +142,7 @@ public class HabitRepository {
      * @param user    пользователь, чья привычка изменяется; в методе используется его id, полученный через метод findUserIdByEmail из userRepository
      * @see UserRepository
      */
-    public void updateHabitName(String newName, Habit habit, User user) {
+    public void updateHabitName(String newName, Habit habit, User user) throws SQLException {
         int userId = userRepository.findUserIdByEmail(user.getEmail());
 
         String normalizedName = newName.toLowerCase().replaceAll("\\s+", " ").trim();
@@ -164,7 +160,7 @@ public class HabitRepository {
      * @param user        пользователь, чья привычка изменяется; в методе используется его id, полученный через метод findUserIdByEmail из userRepository
      * @see UserRepository
      */
-    public void updateHabitDescription(String description, Habit habit, User user) {
+    public void updateHabitDescription(String description, Habit habit, User user) throws SQLException {
         int userId = userRepository.findUserIdByEmail(user.getEmail());
 
         String sql = "UPDATE main.habits SET description = ? WHERE name = ? AND user_id = ?";
@@ -180,7 +176,7 @@ public class HabitRepository {
      * @param user      пользователь, чья привычка изменяется; в методе используется его id, полученный через метод findUserIdByEmail из userRepository
      * @see UserRepository
      */
-    public void updateHabitFrequency(Habit.Frequency frequency, Habit habit, User user) {
+    public void updateHabitFrequency(Habit.Frequency frequency, Habit habit, User user) throws SQLException {
         int userId = userRepository.findUserIdByEmail(user.getEmail());
 
 
@@ -188,17 +184,13 @@ public class HabitRepository {
         executeUpdateStatement(frequency.toString(), habit, userId, sql);
     }
 
-    private void executeUpdateStatement(String firstValue, Habit habit, int userId, String sql) {
-        try (PreparedStatement statement = this.connection.prepareStatement(sql)) {
+    private void executeUpdateStatement(String firstValue, Habit habit, int userId, String sql) throws SQLException{
+         PreparedStatement statement = this.connection.prepareStatement(sql);
             statement.setString(1, firstValue);
             statement.setString(2, habit.getName().toLowerCase().replaceAll("\\s+", " ").trim());
             statement.setInt(3, userId);
 
             statement.executeUpdate();
-            this.connection.commit();
-        } catch (SQLException e) {
-            System.out.println("Ошибка! " + e);
-        }
     }
 
     /**
@@ -219,7 +211,6 @@ public class HabitRepository {
             statement.setInt(2, userId);
 
             statement.executeUpdate();
-            this.connection.commit();
         } catch (SQLException e) {
             System.out.println("Ошибка! " + e);
         }
@@ -271,7 +262,6 @@ public class HabitRepository {
             statement.setBoolean(4, mark);
 
             statement.executeUpdate();
-            this.connection.commit();
         } catch (SQLException e) {
             System.out.println("Ошибка! " + e);
         }
@@ -293,7 +283,6 @@ public class HabitRepository {
             statement.setInt(3, userRepository.findUserIdByEmail(user.getEmail()));
 
             statement.executeUpdate();
-            this.connection.commit();
         } catch (SQLException e) {
             System.out.println("Ошибка! " + e);
         }

@@ -7,6 +7,7 @@ import org.mindrot.jbcrypt.BCrypt;
 import repositories.UserRepository;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -48,7 +49,7 @@ public class UserService {
      * @param email    электронная почта пользователя
      * @param password пароль пользователя; шифруется в методе
      */
-    public void createUser(String name, String email, String password) {
+    public void createUser(String name, String email, String password) throws SQLException {
         String encryptedPass = encrypt(password);
         repository.addUser(name, email, encryptedPass, 1);
     }
@@ -142,7 +143,7 @@ public class UserService {
      * @param email   электронная почта пользователя
      * @return новое имя или сообщение об ошибке
      */
-    public String updateName(String newName, String email) {
+    public String updateName(String newName, String email) throws SQLException {
         User user = repository.readUserByEmail(email);
         String res = nameCheck(newName);
         if (res.equals(newName)) {
@@ -157,7 +158,7 @@ public class UserService {
      * @param oldEmail старая электронная почта пользователя
      * @return новая электронная почта или сообщение об ошибке
      */
-    public String updateEmail(String newEmail, String oldEmail) {
+    public String updateEmail(String newEmail, String oldEmail) throws SQLException {
         User user = repository.readUserByEmail(oldEmail);
         String res = emailCheck(newEmail);
         if (res.equals(newEmail)) {
@@ -172,7 +173,7 @@ public class UserService {
      * @param email электронная почта пользователя
      */
 
-    public void updatePassword(String newPass, String email) {
+    public void updatePassword(String newPass, String email) throws SQLException {
         User user = repository.readUserByEmail(email);
         String encryptedPass = encrypt(newPass);
         repository.updatePassword(encryptedPass, user);
@@ -183,7 +184,7 @@ public class UserService {
      * @param isActive активен или неактивен аккаунт (true - активен, false - неактивен)
      * @param email электронная почта пользователя
      */
-    public void updateActive(boolean isActive, String email) {
+    public void updateActive(boolean isActive, String email) throws SQLException {
         repository.updateActive(isActive, readUserByEmail(email));
     }
     /**
@@ -191,7 +192,7 @@ public class UserService {
      *
      * @param email электронная почта пользователя, которого нужно удалить
      */
-    public void deleteUserByEmail(String email) {
+    public void deleteUserByEmail(String email) throws SQLException {
         repository.deleteUserByEmail(email);
     }
 

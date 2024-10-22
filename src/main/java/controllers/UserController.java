@@ -9,6 +9,8 @@ import services.UserService;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Scanner;
 /**
@@ -37,6 +39,7 @@ public class UserController {
     private boolean mainPageShown = false;
     private HabitRepository habitRepository;
     private HabitStatisticsService habitStatisticsService;
+    private Connection connection;
 
     /**
      * Показывает приветственный экран.
@@ -47,6 +50,7 @@ public class UserController {
      */
     public void showGreetingScreen() {
         this.habitRepository = new HabitRepository(service.getRepoConnection(), this.service.getRepository());
+        this.connection = service.getRepoConnection();
         while (true) {
             if (!mainPageShown) {
                 System.out.println("Здравствуйте! Введите 1, чтобы зарегистрироваться, 2 - чтобы войти в существующий аккаунт, 3 - чтобы выйти из программы");
@@ -77,7 +81,12 @@ public class UserController {
         String name = enterNameInRegistration();
         String email = enterEmailInRegistration();
         String password = enterPasswordInRegistration();
-        service.createUser(name, email, password);
+        try {
+            service.createUser(name, email, password);
+            this.connection.commit();
+        } catch (SQLException e) {
+            System.out.println("Ошибка! " + e);
+        }
         System.out.println("Регистрация прошла успешно!");
         showGreetingScreen();
     }
@@ -299,7 +308,12 @@ public class UserController {
                                 System.out.println("Пользователь уже заблокирован.");
                             } else {
                                 service.readUserByEmail(email).setActive(false);
-                                service.updateActive(false, email);
+                                try {
+                                    service.updateActive(false, email);
+                                    this.connection.commit();
+                                } catch (SQLException e) {
+                                    System.out.println("Ошибка!" + e);
+                                }
                                 System.out.println("Успешно");
                             }
                         } else {
@@ -318,7 +332,12 @@ public class UserController {
                                 System.out.println("Пользователь не заблокирован.");
                             } else {
                                 service.readUserByEmail(email).setActive(true);
-                                service.updateActive(true, email);
+                                try {
+                                    service.updateActive(true, email);
+                                    this.connection.commit();
+                                } catch (SQLException e) {
+                                    System.out.println("Ошибка! " + e);
+                                }
                                 System.out.println("Успешно");
                             }
                         } else {
@@ -332,7 +351,12 @@ public class UserController {
                     } else {
                         System.out.println("Введите email пользователя, которого хотите удалить.");
                         String email = scanner.nextLine();
-                        service.deleteUserByEmail(email);
+                        try {
+                            service.deleteUserByEmail(email);
+                            this.connection.commit();
+                        } catch (SQLException e) {
+                            System.out.println("Ошибка! " + e);
+                        }
                         System.out.println("Успешно");
                     }
                 }
@@ -434,7 +458,12 @@ public class UserController {
             if (service.comparePass(exPass, userEmail)) {
                 System.out.println("Введите новый пароль");
                 updatedValue = scanner.nextLine();
-                service.updatePassword(updatedValue, userEmail);
+                try {
+                    service.updatePassword(updatedValue, userEmail);
+                    this.connection.commit();
+                } catch (SQLException e) {
+                    System.out.println("Ошибка! " + e);
+                }
                 System.out.println("Пароль успешно обновлен!");
                 break;
             } else {
@@ -454,7 +483,13 @@ public class UserController {
         while (true) {
             System.out.println("Введите новый адрес электронной почты");
             updatedValue = scanner.nextLine();
-            String res = service.updateEmail(updatedValue, userEmail);
+            String res = "";
+            try {
+                res = service.updateEmail(updatedValue, userEmail);
+                this.connection.commit();
+            } catch (SQLException e) {
+                System.out.println("Ошибка! " + e);
+            }
             if (res.equals(updatedValue)) {
                 userEmail = updatedValue;
                 System.out.println("Адрес электронной почты обновлен успешно! Новый адрес: " + updatedValue);
@@ -475,7 +510,13 @@ public class UserController {
         while (true) {
             System.out.println("Введите новое имя");
             updatedValue = scanner.nextLine();
-            String res = service.updateName(updatedValue, userEmail);
+            String res = "";
+            try {
+                res = service.updateName(updatedValue, userEmail);
+                this.connection.commit();
+            } catch (SQLException e) {
+                System.out.println("Ошибка! " + e);
+            }
             if (res.equals(updatedValue)) {
                 userEmail = updatedValue;
                 System.out.println(updatedValue + ", имя изменено успешно!");
@@ -497,7 +538,12 @@ public class UserController {
             String i = scanner.nextLine().toLowerCase();
             switch (i) {
                 case "да" -> {
-                    service.deleteUserByEmail(userEmail);
+                    try {
+                        service.deleteUserByEmail(userEmail);
+                        this.connection.commit();
+                    } catch (SQLException e) {
+                        System.out.println("Ошибка! " + e);
+                    }
                     userEmail = "";
                     userName = "";
                     System.out.println("Аккаунт успешно удален.");
@@ -520,7 +566,7 @@ public class UserController {
 
     private void goToHabitController(User user) {
         HabitService habitService = new HabitService(habitRepository, user);
-        HabitController habitController = new HabitController(habitService, habitStatisticsService, this);
+        HabitController habitController = new HabitController(habitService, habitStatisticsService, this, connection);
         habitController.showMainMenu();
     }
 }

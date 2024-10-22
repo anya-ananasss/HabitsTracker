@@ -4,6 +4,8 @@ services:
     restart: always
     depends_on:
      - tracker_app_database
+    stdin_open: true
+    tty: true
   tracker_app_database:
     image: postgres
     restart: always

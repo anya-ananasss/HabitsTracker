@@ -6,6 +6,8 @@ import lombok.Setter;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
+import java.util.Objects;
+
 /**
  * Класс, описывающий модель для привычки.
  * <p>
@@ -47,6 +49,19 @@ public class Habit {
         this.frequency = frequency;
         this.statistics = new LinkedHashMap<>();
     }
+    /**
+     * Переопределение метода equals для корректного сравнения привычек.
+     * @param obj привычка, с которой производится сравнение
+     * @return true, если привычки имеют одинаковое название,
+     * и пользователя (являются одной и той же привычкой), false - иначе.
+     */
+    @Override
+    public boolean equals(Object obj) {
+        Habit toWork = (Habit) obj;
+        return (Objects.equals(this.name, toWork.name) &
+                Objects.equals(this.user, toWork.user));
+    }
+
 
     /**
      * Перечисление, содержащее доступные варианты частоты для привычек.

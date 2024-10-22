@@ -4,6 +4,7 @@ import models.Habit;
 import repositories.HabitRepository;
 import models.User;
 
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -33,19 +34,41 @@ public class HabitService {
         this.user = user;
     }
 
-
     /**
      * Создает новую привычку с заданным названием, описанием и частотой для заданного пользователя.
+     * @param name название привычки
+     * @param description описание привычки
+     * @param frequency частота выполнения привычки
+     * @return сообщение об успешном создании привычки
+     */
+    public String createHabit(String name, String description, Habit.Frequency frequency) throws SQLException {
+        LocalDateTime createdAt = LocalDateTime.now();
+        repository.addHabit(name, description, createdAt, this.user, frequency);
+
+
+        return "Привычка успешно создана!";
+    }
+
+    /**
+     * Создает новую привычку с заданным названием, описанием, временем создания и частотой для заданного пользователя.
      *
      * @param name        название привычки
      * @param description описание привычки
+     * @param createdAt   время создания привычки
      * @param frequency   частота привычки
-     * @return сообщение об успешном создании привычки
      */
-    public String createHabit(String name, String description, Habit.Frequency frequency) {
-        LocalDateTime createdAt = LocalDateTime.now();
+    public void createHabit(String name, String description, LocalDateTime createdAt, Habit.Frequency frequency) throws SQLException {
         repository.addHabit(name, description, createdAt, this.user, frequency);
-        return "Привычка успешно создана!";
+    }
+
+    /**
+     * Находит привычку по ее названию у заданного пользователя.
+     *
+     * @param name название привычки
+     * @return Habit, если привычка найдена; null иначе
+     */
+    public Habit findHabitByName(String name) {
+        return repository.findHabitByName(name.toLowerCase().replaceAll("\\s+", " ").trim(), this.user);
     }
 
     /**
@@ -66,7 +89,7 @@ public class HabitService {
      * @param oldName старое название привычки
      * @return сообщение о результате обновления названия
      */
-    public String updateName(String newName, String oldName) {
+    public String updateName(String newName, String oldName) throws SQLException {
         Habit manipulated = repository.findHabitByName(oldName, this.user);
         if (newName.isEmpty()) {
             return "Название не может быть пустым!";
@@ -87,7 +110,7 @@ public class HabitService {
      * @param habitName      название привычки
      * @return сообщение о результате обновления описания
      */
-    public String updateDescription(String newDescription, String habitName) {
+    public String updateDescription(String newDescription, String habitName) throws SQLException {
         Habit manipulated = repository.findHabitByName(habitName, this.user);
         if (newDescription.toCharArray().length > 200) {
             return "Описание не должно превышать 200 символов!";
@@ -104,7 +127,7 @@ public class HabitService {
      * @param habitName    название привычки
      * @return сообщение о результате обновления частоты
      */
-    public String updateFrequency(Habit.Frequency newFrequency, String habitName) {
+    public String updateFrequency(Habit.Frequency newFrequency, String habitName) throws SQLException {
         Habit manipulated = repository.findHabitByName(habitName, this.user);
         repository.updateHabitFrequency(newFrequency, manipulated, this.user);
         return "Успешно обновлено!";
@@ -169,10 +192,10 @@ public class HabitService {
     /**
      * Сортирует привычки пользователя по последней дате их выполнения.
      *
-     * @param earlierMarked true для сортировки от более поздних по отметке (недавно отмеченных) к давно отмеченным, false — наоборот
+     * @param recentlyMarked true для сортировки от более поздних по отметке (недавно отмеченных) к давно отмеченным, false — наоборот
      * @return LinkedHashMap отсортированных привычек, где ключ - название привычки, значение - дата последней отметки
      */
-    public LinkedHashMap<String, LocalDate> sortHabitsByMarked(boolean earlierMarked) {
+    public LinkedHashMap<String, LocalDate> sortHabitsByMarked(boolean recentlyMarked) {
         List<Habit> habits = repository.getAllHabitsByUser(this.user);
         LinkedHashMap<String, LocalDate> habitsSorted = new LinkedHashMap<>();
         List<Habit> habitsWithDates = new ArrayList<>();
@@ -191,7 +214,7 @@ public class HabitService {
         habitsWithDates.sort((h1, h2) -> {
             LocalDate date1 = getLatestTrueDate(h1);
             LocalDate date2 = getLatestTrueDate(h2);
-            if (earlierMarked) {
+            if (recentlyMarked) {
                 return date2.compareTo(date1);
             } else {
                 return date1.compareTo(date2);
@@ -200,7 +223,7 @@ public class HabitService {
 
         habitsSorted.clear();
 
-        if (!earlierMarked) {
+        if (!recentlyMarked) {
             for (Habit habit : habitsWithoutDates) {
                 habitsSorted.put(habit.getName(), null);
             }
@@ -210,7 +233,7 @@ public class HabitService {
             habitsSorted.put(habit.getName(), getLatestTrueDate(habit));
         }
 
-        if (earlierMarked) {
+        if (recentlyMarked) {
             for (Habit habit : habitsWithoutDates) {
                 habitsSorted.put(habit.getName(), null);
             }
@@ -296,9 +319,9 @@ public class HabitService {
                 return "Еще не время! Вы уже отмечались " + sentenceEnd + ".";
             }
         } else {
-            marking.getStatistics().put(LocalDate.now(), true);
+            repository.deleteHabitStat(LocalDate.now(), habitName, this.user);
+            repository.addHabitStat(LocalDate.now(), true, habitName, this.user);
             return "Отметка проставлена!";
         }
     }
-
 }

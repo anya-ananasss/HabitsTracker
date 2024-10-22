@@ -54,6 +54,8 @@ public class Config {
             Liquibase liquibase = new Liquibase("db-changelog/main-changelog.xml", new ClassLoaderResourceAccessor(), database);
             liquibase.update();
 
+            con.commit();
+
             return new Object[] {con, liquibase};
 
         } catch (IOException | SQLException | LiquibaseException e) {
