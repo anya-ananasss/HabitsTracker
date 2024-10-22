@@ -2,6 +2,7 @@ package repositories;
 
 import models.Habit;
 import models.User;
+import serviceClasses.Config;
 
 import java.sql.*;
 import java.time.LocalDate;
@@ -25,14 +26,15 @@ public class HabitRepository {
     private final UserRepository userRepository;
 
     /**
-     * Конструктор для инициализации репозитория для работы с привычкой, используя созданную сессию соединения с базой данных
-     * и репозиторий для работы с пользователем, создавшим эту привычку.
+     * Конструктор для инициализации репозитория для работы с привычкой, используя
+     * репозиторий для работы с пользователем, создавшим эту привычку.
+     * Сессия для работы с базой данных создается внутри контроллера.
      *
-     * @param connection     сессия соединения с базой данных
      * @param userRepository репозиторий пользователя, создавшего привычку
      */
-    public HabitRepository(Connection connection, UserRepository userRepository) {
-        this.connection = connection;
+    public HabitRepository(UserRepository userRepository) {
+        Config config = new Config();
+        this.connection = (Connection) config.establishConnection()[0];
         this.userRepository = userRepository;
     }
 
@@ -60,6 +62,7 @@ public class HabitRepository {
         statement.setString(5, frequency.toString());
 
         statement.executeUpdate();
+        statement.close();
     }
 
     /**
@@ -191,6 +194,7 @@ public class HabitRepository {
             statement.setInt(3, userId);
 
             statement.executeUpdate();
+        statement.close();
     }
 
     /**

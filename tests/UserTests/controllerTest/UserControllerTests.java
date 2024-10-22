@@ -16,8 +16,6 @@
 //import java.io.PrintStream;
 //import java.sql.Connection;
 //import java.sql.SQLException;
-//import java.util.ArrayList;
-//import java.util.List;
 //
 //
 //import static org.assertj.core.api.Assertions.*;
@@ -36,14 +34,16 @@
 //    void setUp() {
 //        postgres.start();
 //        Config config = new Config();
-//        Object[] connections = config.establishConnections();
+//        Object[] connections = config.establishConnection();
 //        connection = (Connection) connections[0];
 //        userRepository = new UserRepository(connection);
 //        service = new UserService(userRepository);
+//        System.out.println("пипяу");
 //    }
 //
 //    @AfterEach
 //    void clear() throws SQLException {
+//        System.out.println("ПИПИПЯУ");
 //        connection.rollback();
 //        connection.close();
 //        postgres.stop();
@@ -255,117 +255,75 @@
 //    }
 //
 //    @Test
-//    public void basicUpdatePass() {
-//        String input1 = "1234\n5678\n";
-//        InputStream in1 = new ByteArrayInputStream(input1.getBytes());
-//        System.setIn(in1);
-//
-//        UserController controller = new UserController(service);
-//        controller.setUserEmail("anya@ya.ru");
-//        controller.setUserName("anya");
-//
-//        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
-//        System.setOut(new PrintStream(outContent));
-//
-//        controller.setHabitRepository(new HabitRepository(service.getRepoConnection(), service.getRepository()));
-//        controller.setConnection(service.getRepoConnection());
-//        controller.updatePass();
-//
-//
-//        String expectedMessage = "Пароль успешно обновлен!";
-//        String output = outContent.toString();
-//        String expectedEmail = "anya@ya.ru";
-//        String expectedName = "anya";
-//        assertThat(output).contains(expectedMessage);
-//        assertThat(controller.getUserEmail()).isEqualTo(expectedEmail);
-//        assertThat(controller.getUserName()).isEqualTo(expectedName);
-//        System.setOut(System.out);
-//        System.setIn(System.in);
-//    }
-//
-//    @Test
 //    public void basicUpdateEmail() {
 //        String input1 = "an@ya.ru\n";
 //        InputStream in1 = new ByteArrayInputStream(input1.getBytes());
 //        System.setIn(in1);
 //
-//
-//        UserController controller = new UserController(service);
-//        controller.setUserEmail("anya@ya.ru");
-//        controller.setUserName("anya");
-//
 //        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
 //        System.setOut(new PrintStream(outContent));
+//        try {
+//            Connection connectionMock = mock(Connection.class);
+//            service = spy(new UserService(userRepository));
 //
-//        controller.setHabitRepository(new HabitRepository(service.getRepoConnection(), service.getRepository()));
-//        controller.setConnection(service.getRepoConnection());
-//        controller.updateEmail();
+//            doNothing().when(connectionMock).commit();
+//
+//            UserController controller = spy(new UserController(service));
+//
+//            doNothing().when(controller).showGreetingScreen();
+//            controller.setConnection(connectionMock);
+//
+//            controller.setUserEmail("anya@ya.ru");
+//            controller.setUserName("anya");
+//
+//            controller.updateEmail();
+//            verify(service).updateEmail("an@ya.ru", "anya@ya.ru");
+//        } catch (SQLException e) {
+//            fail();
+//        }
 //
 //
 //        String expectedMessage = "Введите новый адрес электронной почты\r\nАдрес электронной почты обновлен успешно! Новый адрес: an@ya.ru";
 //        String output = outContent.toString();
-//        String expectedEmail = "an@ya.ru";
-//        String expectedName = "anya";
-//        assertThat(output).contains(expectedMessage);
-//        assertThat(controller.getUserEmail()).isEqualTo(expectedEmail);
-//        assertThat(controller.getUserName()).isEqualTo(expectedName);
-//        System.setOut(System.out);
-//        System.setIn(System.in);
-//    }
-//
-//    @Test
-//    public void basicUpdateName() {
-//        String input = "анечка\n";
-//        InputStream in = new ByteArrayInputStream(input.getBytes());
-//        System.setIn(in);
-//
-//        UserController controller = spy(new UserController(service));
-//        controller.setUserEmail("anya@ya.ru");
-//        controller.setUserName("anya");
-//
-//        doNothing().when(controller).showGreetingScreen(); //не заходить в showGreetingScreen
-//
-//        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
-//        System.setOut(new PrintStream(outContent));
-//
-//        controller.setHabitRepository(new HabitRepository(service.getRepoConnection(), service.getRepository()));
-//        controller.setConnection(service.getRepoConnection());
-//        controller.updateName();
-//
-//
-//        String expectedMessage = "Введите новое имя\r\nанечка, имя изменено успешно!";
-//        String output = outContent.toString();
 //        assertThat(output).contains(expectedMessage);
 //        System.setOut(System.out);
 //        System.setIn(System.in);
 //    }
-//
 //    @Test
 //    public void updatePassPasswordMismatch() {
 //        String input1 = "1111\n1234\n5678\n";
 //        InputStream in1 = new ByteArrayInputStream(input1.getBytes());
 //        System.setIn(in1);
 //
-//        UserController controller = new UserController(service);
-//        controller.setUserEmail("anya@ya.ru");
-//        controller.setUserName("anya");
-//
 //        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
 //        System.setOut(new PrintStream(outContent));
 //
+//        try {
+//            Connection connectionMock = mock(Connection.class);
+//            service = spy(new UserService(userRepository));
 //
-//        controller.setHabitRepository(new HabitRepository(service.getRepoConnection(), service.getRepository()));
-//        controller.setConnection(service.getRepoConnection());
-//        controller.updatePass();
+//            doNothing().when(connectionMock).commit();
+//
+//            UserController controller = spy(new UserController(service));
+//
+//            doNothing().when(controller).showGreetingScreen();
+//            controller.setConnection(connectionMock);
+//
+//            controller.setUserEmail("anya@ya.ru");
+//            controller.setUserName("anya");
+//
+//            controller.updatePass();
+//            verify(service).updatePassword("5678", "anya@ya.ru");
+//        } catch (SQLException e) {
+//            fail();
+//        }
 //
 //
-//        String expectedMessage = "Неправильный пароль! Повторите попытку!\r\nВведите старый пароль";
+//        String expectedMessage1 = "Неправильный пароль! Повторите попытку!\r\nВведите старый пароль";
+//        String expectedMessage2 = "Пароль успешно обновлен!";
 //        String output = outContent.toString();
-//        String expectedEmail = "anya@ya.ru";
-//        String expectedName = "anya";
-//        assertThat(output).contains(expectedMessage);
-//        assertThat(controller.getUserEmail()).isEqualTo(expectedEmail);
-//        assertThat(controller.getUserName()).isEqualTo(expectedName);
+//        assertThat(output).contains(expectedMessage1);
+//        assertThat(output).contains(expectedMessage2);
 //        System.setOut(System.out);
 //        System.setIn(System.in);
 //    }
@@ -375,27 +333,33 @@
 //        String input1 = "anya\nan@ya.ru\n";
 //        InputStream in1 = new ByteArrayInputStream(input1.getBytes());
 //        System.setIn(in1);
-//
-//
-//        UserController controller = new UserController(service);
-//        controller.setUserEmail("anya@ya.ru");
-//        controller.setUserName("anya");
-//
 //        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
 //        System.setOut(new PrintStream(outContent));
+//        try {
+//            Connection connectionMock = mock(Connection.class);
+//            service = spy(new UserService(userRepository));
 //
-//        controller.setHabitRepository(new HabitRepository(service.getRepoConnection(), service.getRepository()));
-//        controller.setConnection(service.getRepoConnection());
-//        controller.updateEmail();
+//            doNothing().when(connectionMock).commit();
+//
+//            UserController controller = spy(new UserController(service));
+//
+//            doNothing().when(controller).showGreetingScreen();
+//            controller.setConnection(connectionMock);
+//
+//            controller.setUserEmail("anya@ya.ru");
+//            controller.setUserName("anya");
+//
+//            controller.updateEmail();
+//            verify(service).updateEmail("an@ya.ru", "anya@ya.ru");
+//        } catch (SQLException e) {
+//            fail();
+//        }
 //
 //
 //        String expectedMessage = "Пожалуйста, введите корректный email!\r\nВведите новый адрес электронной почты";
 //        String output = outContent.toString();
-//        String expectedEmail = "an@ya.ru";
-//        String expectedName = "anya";
 //        assertThat(output).contains(expectedMessage);
-//        assertThat(controller.getUserEmail()).isEqualTo(expectedEmail);
-//        assertThat(controller.getUserName()).isEqualTo(expectedName);
+//
 //        System.setOut(System.out);
 //        System.setIn(System.in);
 //    }
@@ -406,27 +370,33 @@
 //        String input1 = "anya@ya\nan@ya.ru\n";
 //        InputStream in1 = new ByteArrayInputStream(input1.getBytes());
 //        System.setIn(in1);
-//
-//
-//        UserController controller = new UserController(service);
-//        controller.setUserEmail("anya@ya.ru");
-//        controller.setUserName("anya");
-//
 //        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
 //        System.setOut(new PrintStream(outContent));
+//        try {
+//            Connection connectionMock = mock(Connection.class);
+//            service = spy(new UserService(userRepository));
 //
-//        controller.setHabitRepository(new HabitRepository(service.getRepoConnection(), service.getRepository()));
-//        controller.setConnection(service.getRepoConnection());
-//        controller.updateEmail();
+//            doNothing().when(connectionMock).commit();
+//
+//            UserController controller = spy(new UserController(service));
+//
+//            doNothing().when(controller).showGreetingScreen();
+//            controller.setConnection(connectionMock);
+//
+//            controller.setUserEmail("anya@ya.ru");
+//            controller.setUserName("anya");
+//
+//            controller.updateEmail();
+//            verify(service).updateEmail("an@ya.ru", "anya@ya.ru");
+//        } catch (SQLException e) {
+//            fail();
+//        }
 //
 //
 //        String expectedMessage = "Пожалуйста, введите корректный email!\r\nВведите новый адрес электронной почты";
 //        String output = outContent.toString();
-//        String expectedEmail = "an@ya.ru";
-//        String expectedName = "anya";
 //        assertThat(output).contains(expectedMessage);
-//        assertThat(controller.getUserEmail()).isEqualTo(expectedEmail);
-//        assertThat(controller.getUserName()).isEqualTo(expectedName);
+//
 //        System.setOut(System.out);
 //        System.setIn(System.in);
 //    }
@@ -436,27 +406,33 @@
 //        String input1 = "аня@я.ру\nan@ya.ru\n";
 //        InputStream in1 = new ByteArrayInputStream(input1.getBytes());
 //        System.setIn(in1);
-//
-//
-//        UserController controller = new UserController(service);
-//        controller.setUserEmail("anya@ya.ru");
-//        controller.setUserName("anya");
-//
 //        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
 //        System.setOut(new PrintStream(outContent));
+//        try {
+//            Connection connectionMock = mock(Connection.class);
+//            service = spy(new UserService(userRepository));
 //
-//        controller.setHabitRepository(new HabitRepository(service.getRepoConnection(), service.getRepository()));
-//        controller.setConnection(service.getRepoConnection());
-//        controller.updateEmail();
+//            doNothing().when(connectionMock).commit();
+//
+//            UserController controller = spy(new UserController(service));
+//
+//            doNothing().when(controller).showGreetingScreen();
+//            controller.setConnection(connectionMock);
+//
+//            controller.setUserEmail("anya@ya.ru");
+//            controller.setUserName("anya");
+//
+//            controller.updateEmail();
+//            verify(service).updateEmail("an@ya.ru", "anya@ya.ru");
+//        } catch (SQLException e) {
+//            fail();
+//        }
 //
 //
 //        String expectedMessage = "Пожалуйста, введите корректный email!\r\nВведите новый адрес электронной почты";
 //        String output = outContent.toString();
-//        String expectedEmail = "an@ya.ru";
-//        String expectedName = "anya";
 //        assertThat(output).contains(expectedMessage);
-//        assertThat(controller.getUserEmail()).isEqualTo(expectedEmail);
-//        assertThat(controller.getUserName()).isEqualTo(expectedName);
+//
 //        System.setOut(System.out);
 //        System.setIn(System.in);
 //    }
@@ -466,27 +442,33 @@
 //        String input1 = "anya.ru\nan@ya.ru\n";
 //        InputStream in1 = new ByteArrayInputStream(input1.getBytes());
 //        System.setIn(in1);
-//
-//
-//        UserController controller = new UserController(service);
-//        controller.setUserEmail("anya@ya.ru");
-//        controller.setUserName("anya");
-//
 //        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
 //        System.setOut(new PrintStream(outContent));
+//        try {
+//            Connection connectionMock = mock(Connection.class);
+//            service = spy(new UserService(userRepository));
 //
-//        controller.setHabitRepository(new HabitRepository(service.getRepoConnection(), service.getRepository()));
-//        controller.setConnection(service.getRepoConnection());
-//        controller.updateEmail();
+//            doNothing().when(connectionMock).commit();
+//
+//            UserController controller = spy(new UserController(service));
+//
+//            doNothing().when(controller).showGreetingScreen();
+//            controller.setConnection(connectionMock);
+//
+//            controller.setUserEmail("anya@ya.ru");
+//            controller.setUserName("anya");
+//
+//            controller.updateEmail();
+//            verify(service).updateEmail("an@ya.ru", "anya@ya.ru");
+//        } catch (SQLException e) {
+//            fail();
+//        }
 //
 //
 //        String expectedMessage = "Пожалуйста, введите корректный email!\r\nВведите новый адрес электронной почты";
 //        String output = outContent.toString();
-//        String expectedEmail = "an@ya.ru";
-//        String expectedName = "anya";
 //        assertThat(output).contains(expectedMessage);
-//        assertThat(controller.getUserEmail()).isEqualTo(expectedEmail);
-//        assertThat(controller.getUserName()).isEqualTo(expectedName);
+//
 //        System.setOut(System.out);
 //        System.setIn(System.in);
 //    }
@@ -496,27 +478,33 @@
 //        String input1 = "\nan@ya.ru\n";
 //        InputStream in1 = new ByteArrayInputStream(input1.getBytes());
 //        System.setIn(in1);
-//
-//
-//        UserController controller = new UserController(service);
-//        controller.setUserEmail("anya@ya.ru");
-//        controller.setUserName("anya");
-//
 //        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
 //        System.setOut(new PrintStream(outContent));
+//        try {
+//            Connection connectionMock = mock(Connection.class);
+//            service = spy(new UserService(userRepository));
 //
-//        controller.setHabitRepository(new HabitRepository(service.getRepoConnection(), service.getRepository()));
-//        controller.setConnection(service.getRepoConnection());
-//        controller.updateEmail();
+//            doNothing().when(connectionMock).commit();
+//
+//            UserController controller = spy(new UserController(service));
+//
+//            doNothing().when(controller).showGreetingScreen();
+//            controller.setConnection(connectionMock);
+//
+//            controller.setUserEmail("anya@ya.ru");
+//            controller.setUserName("anya");
+//
+//            controller.updateEmail();
+//            verify(service).updateEmail("an@ya.ru", "anya@ya.ru");
+//        } catch (SQLException e) {
+//            fail();
+//        }
 //
 //
 //        String expectedMessage = "Пожалуйста, введите корректный email!\r\nВведите новый адрес электронной почты";
 //        String output = outContent.toString();
-//        String expectedEmail = "an@ya.ru";
-//        String expectedName = "anya";
 //        assertThat(output).contains(expectedMessage);
-//        assertThat(controller.getUserEmail()).isEqualTo(expectedEmail);
-//        assertThat(controller.getUserName()).isEqualTo(expectedName);
+//
 //        System.setOut(System.out);
 //        System.setIn(System.in);
 //    }
@@ -526,30 +514,38 @@
 //        String input1 = "anya@ya.ru\nan@ya.ru\n";
 //        InputStream in1 = new ByteArrayInputStream(input1.getBytes());
 //        System.setIn(in1);
-//
-//
-//        UserController controller = new UserController(service);
-//        controller.setUserEmail("anya@ya.ru");
-//        controller.setUserName("anya");
-//
 //        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
 //        System.setOut(new PrintStream(outContent));
+//        try {
+//            Connection connectionMock = mock(Connection.class);
+//            service = spy(new UserService(userRepository));
 //
-//        controller.setHabitRepository(new HabitRepository(service.getRepoConnection(), service.getRepository()));
-//        controller.setConnection(service.getRepoConnection());
-//        controller.updateEmail();
+//            doNothing().when(connectionMock).commit();
 //
+//            UserController controller = spy(new UserController(service));
+//
+//            doNothing().when(controller).showGreetingScreen();
+//            controller.setConnection(connectionMock);
+//
+//            controller.setUserEmail("anya@ya.ru");
+//            controller.setUserName("anya");
+//            User user = service.readUserByEmail("anya@ya.ru");
+//            System.out.println(user.getEmail());
+//            System.out.println(user.getName());
+//            System.out.println(user.getPassword());
+//            controller.updateEmail();
+//            verify(service).updateEmail("an@ya.ru", "anya@ya.ru");
+//        } catch (SQLException e) {
+//            fail();
+//        }
 //
 //        String expectedMessage = """
 //                Пользователь с таким email уже зарегистрирован!\r
 //                Введите новый адрес электронной почты\r
 //                Адрес электронной почты обновлен успешно! Новый адрес: an@ya.ru""";
 //        String output = outContent.toString();
-//        String expectedEmail = "an@ya.ru";
-//        String expectedName = "anya";
 //        assertThat(output).contains(expectedMessage);
-//        assertThat(controller.getUserEmail()).isEqualTo(expectedEmail);
-//        assertThat(controller.getUserName()).isEqualTo(expectedName);
+//
 //        System.setOut(System.out);
 //        System.setIn(System.in);
 //    }
@@ -560,25 +556,34 @@
 //        InputStream in = new ByteArrayInputStream(input.getBytes());
 //        System.setIn(in);
 //
-//        UserController controller = spy(new UserController(service));
-//        controller.setUserEmail("anya@ya.ru");
-//        controller.setUserName("anya");
-//
-//        doNothing().when(controller).showGreetingScreen(); //не заходить в showGreetingScreen
-//
 //        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
 //        System.setOut(new PrintStream(outContent));
+//        try {
+//            Connection connectionMock = mock(Connection.class);
+//            service = spy(new UserService(userRepository));
 //
-//        controller.setHabitRepository(new HabitRepository(service.getRepoConnection(), service.getRepository()));
-//        controller.setConnection(service.getRepoConnection());
-//        controller.updateName();
+//            doNothing().when(connectionMock).commit();
 //
+//            UserController controller = spy(new UserController(service));
 //
-//        String expectedMessage = "Имя не может быть пустым! Пожалуйста, введите имя!\r\nВведите новое имя\r\nанечка, имя изменено успешно!";
-//        String output = outContent.toString();
-//        assertThat(output).contains(expectedMessage);
-//        System.setOut(System.out);
-//        System.setIn(System.in);
+//            doNothing().when(controller).showGreetingScreen();
+//
+//            controller.setConnection(connectionMock);
+//
+//            controller.setUserEmail("anya@ya.ru");
+//            controller.setUserName("anya");
+//
+//            controller.updateName();
+//            verify(service).updateName("анечка", "anya@ya.ru");
+//
+//            String expectedMessage = "Имя не может быть пустым! Пожалуйста, введите имя!\r\nВведите новое имя\r\nанечка, имя изменено успешно!";
+//            String output = outContent.toString();
+//            assertThat(output).contains(expectedMessage);
+//            System.setOut(System.out);
+//            System.setIn(System.in);
+//        } catch (SQLException e) {
+//            fail();
+//        }
 //    }
 //
 //    @Test
@@ -627,46 +632,31 @@
 //
 //    @Test
 //    public void deleteUserYes() {
+//
 //        String input = "да\n";
 //        InputStream in = new ByteArrayInputStream(input.getBytes());
 //        System.setIn(in);
 //
-//        UserController controller = spy(new UserController(service));
-//        controller.setUserEmail("anya@ya.ru");
-//        controller.setUserName("anya");
-//
-//        doNothing().when(controller).showGreetingScreen();
-//
-//        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
-//        System.setOut(new PrintStream(outContent));
-//
 //        try {
-//            service.deleteUserByEmail("anya@ya.ru");
-//        } catch (SQLException e) {
-//            fail();
-//        }
+//            Connection connectionMock = mock(Connection.class);
+//            service = spy(new UserService(userRepository));
 //
-//        User found = service.readUserByEmail("anya@ya.ru");
+//            doNothing().when(connectionMock).commit();
 //
-//        assertThat(found).isNull();
-//    }
+//            UserController controller = spy(new UserController(service));
 //
-//    @Test
-//    public void deleteUserYesCheckUser() {
-//        String input = "да\n";
-//        InputStream in = new ByteArrayInputStream(input.getBytes());
-//        System.setIn(in);
+//            doNothing().when(controller).showGreetingScreen();
+//            controller.setConnection(connectionMock);
+//            controller.setUserEmail("anya@ya.ru");
+//            controller.setUserName("anya");
 //
-//        UserController controller = spy(new UserController(service));
-//        controller.setUserEmail("anya@ya.ru");
-//        controller.setUserName("anya");
+//            controller.deleteUser();
+//            verify(service).deleteUserByEmail("anya@ya.ru");
 //
-//        doNothing().when(controller).showGreetingScreen();
+//            ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+//            System.setOut(new PrintStream(outContent));
 //
-//        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
-//        System.setOut(new PrintStream(outContent));
-//        try {
-//            service.deleteUserByEmail("anya@ya.ru");
+//
 //        } catch (SQLException e) {
 //            fail();
 //        }
@@ -698,33 +688,8 @@
 //    }
 //
 //    @Test
-//    public void deleteUserNoCheckUser() {
-//
-//        String input = "нет\n";
-//        InputStream in = new ByteArrayInputStream(input.getBytes());
-//        System.setIn(in);
-//
-//
-//        UserController controller = spy(new UserController(service));
-//        controller.setUserEmail("anya@ya.ru");
-//        controller.setUserName("anya");
-//
-//
-//        doNothing().when(controller).showPersonalAccountSettings();
-//
-//        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
-//        System.setOut(new PrintStream(outContent));
-//
-//        controller.deleteUser();
-//
-//        User expected = new User("anya", "anya@ya.ru", "$2a$10$Lz/N/PPqZTdHgRQC6Wf6EeU/SZb/KxAEGm.H/MDvW315ygMq3wEwm", 1);
-//        User found = service.readUserByEmail("anya@ya.ru");
-//        assertThat(expected).isEqualTo(found);
-//    }
-//
-//    @Test
 //    public void enterPasswordInLogin() {
-//        String input = "5678\n1234\n";
+//        String input = "5678\n1\n1234\n";
 //
 //        InputStream in = new ByteArrayInputStream(input.getBytes());
 //        System.setIn(in);
@@ -755,25 +720,34 @@
 //
 //    @Test
 //    public void loginUser() {
-//        String input = "anya@ya.ru\n1234\n";
+//        String input = "anya@ya.ru\n1234\n1234\n";
 //
 //        InputStream in = new ByteArrayInputStream(input.getBytes());
 //        System.setIn(in);
-//
-//
-//        UserController controller = spy(new UserController(service));
-//        doNothing().when(controller).showMainPageUser();
-//
-//        controller.setUserEmail("anya@ya.ru");
-//        controller.setUserName("anya");
-//
-//
 //        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
 //        System.setOut(new PrintStream(outContent));
 //
-//        controller.setHabitRepository(new HabitRepository(service.getRepoConnection(), service.getRepository()));
-//        controller.setConnection(service.getRepoConnection());
-//        controller.loginUser();
+//        try {
+//            Connection connectionMock = mock(Connection.class);
+//            service = spy(new UserService(userRepository));
+//
+//            doNothing().when(connectionMock).commit();
+//
+//
+//            UserController controller = spy(new UserController(service));
+//            doNothing().when(controller).showMainPageUser();
+//            doNothing().when(controller).showGreetingScreen();
+//            doNothing().when(controller).initHabitsScheduler();
+//           HabitRepository habitRepository = new HabitRepository(userRepository);
+//            controller.setHabitRepository(habitRepository);
+//            controller.setConnection(connectionMock);
+//
+//
+//            controller.loginUser();
+//            verify(controller).enterPasswordInLogin("anya@ya.ru");
+//        } catch (SQLException e) {
+//            fail();
+//        }
 //
 //        String expectedMessage = "Здравствуйте, anya!";
 //
@@ -809,27 +783,35 @@
 //
 //    @Test
 //    public void adminPage1void() {
-//        String input = "1\n4\n";
+//        String input = "1\n5\n";
 //
 //        InputStream in = new ByteArrayInputStream(input.getBytes());
 //        System.setIn(in);
 //
-//
-//        UserController controller = spy(new UserController(service));
-//
-//        doNothing().when(controller).showGreetingScreen();
-//
+//        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+//        System.setOut(new PrintStream(outContent));
 //
 //        try {
+//            Connection connectionMock = mock(Connection.class);
+//            service = spy(new UserService(userRepository));
+//
 //            service.deleteUserByEmail("anya@ya.ru");
+//            doNothing().when(connectionMock).commit();
+//
+//            UserController controller = spy(new UserController(service));
+//
+//            doNothing().when(controller).showGreetingScreen();
+//            controller.setConnection(connectionMock);
+//
+//            controller.setUserEmail("admin@admin.ru");
+//            controller.setUserName("admin");
+//
+//            controller.showMainPageAdmin();
+//            verify(service).getAllUsers();
 //        } catch (SQLException e) {
 //            fail();
 //        }
 //
-//        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
-//        System.setOut(new PrintStream(outContent));
-//
-//        controller.showMainPageAdmin();
 //
 //        String expectedMessage = "Ни одного пользователя не создано!";
 //
@@ -841,26 +823,35 @@
 //
 //    @Test
 //    public void adminPage2void() {
-//        String input = "2\n4\n";
+//        String input = "2\n5\n";
 //
 //        InputStream in = new ByteArrayInputStream(input.getBytes());
 //        System.setIn(in);
 //
-//
-//        UserController controller = spy(new UserController(service));
-//
-//        doNothing().when(controller).showGreetingScreen();
+//        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+//        System.setOut(new PrintStream(outContent));
 //
 //        try {
+//            Connection connectionMock = mock(Connection.class);
+//            service = spy(new UserService(userRepository));
+//
 //            service.deleteUserByEmail("anya@ya.ru");
+//            doNothing().when(connectionMock).commit();
+//
+//            UserController controller = spy(new UserController(service));
+//
+//            doNothing().when(controller).showGreetingScreen();
+//            controller.setConnection(connectionMock);
+//
+//            controller.setUserEmail("admin@admin.ru");
+//            controller.setUserName("admin");
+//
+//            controller.showMainPageAdmin();
+//            verify(service).getAllUsers();
 //        } catch (SQLException e) {
 //            fail();
 //        }
 //
-//        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
-//        System.setOut(new PrintStream(outContent));
-//
-//        controller.showMainPageAdmin();
 //
 //        String expectedMessage = "Ни одного пользователя не создано!";
 //
@@ -872,20 +863,35 @@
 //
 //    @Test
 //    public void adminPage3void() {
-//        String input = "3\n4\n";
+//        String input = "3\n5\n";
 //
 //        InputStream in = new ByteArrayInputStream(input.getBytes());
 //        System.setIn(in);
 //
-//
-//        UserController controller = spy(new UserController(service));
-//        doNothing().when(controller).showGreetingScreen();
-//
-//
 //        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
 //        System.setOut(new PrintStream(outContent));
 //
-//        controller.showMainPageAdmin();
+//        try {
+//            Connection connectionMock = mock(Connection.class);
+//            service = spy(new UserService(userRepository));
+//
+//            service.deleteUserByEmail("anya@ya.ru");
+//            doNothing().when(connectionMock).commit();
+//
+//            UserController controller = spy(new UserController(service));
+//
+//            doNothing().when(controller).showGreetingScreen();
+//            controller.setConnection(connectionMock);
+//
+//            controller.setUserEmail("admin@admin.ru");
+//            controller.setUserName("admin");
+//
+//            controller.showMainPageAdmin();
+//            verify(service).getAllUsers();
+//        } catch (SQLException e) {
+//            fail();
+//        }
+//
 //
 //        String expectedMessage = "Ни одного пользователя не создано!";
 //
@@ -896,8 +902,48 @@
 //    }
 //
 //    @Test
+//    public void adminPage4void() {
+//        String input = "4\n5\n";
+//
+//        InputStream in = new ByteArrayInputStream(input.getBytes());
+//        System.setIn(in);
+//
+//        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+//        System.setOut(new PrintStream(outContent));
+//
+//        try {
+//            Connection connectionMock = mock(Connection.class);
+//            service = spy(new UserService(userRepository));
+//            service.deleteUserByEmail("anya@ya.ru");
+//            doNothing().when(connectionMock).commit();
+//
+//            UserController controller = spy(new UserController(service));
+//
+//            doNothing().when(controller).showGreetingScreen();
+//            controller.setConnection(connectionMock);
+//
+//            controller.setUserEmail("admin@admin.ru");
+//            controller.setUserName("admin");
+//
+//            controller.showMainPageAdmin();
+//            verify(service).getAllUsers();
+//        } catch (SQLException e) {
+//            fail();
+//        }
+//
+//
+//        String expectedMessage = "Ни одного пользователя не создано!";
+//
+//        String output = outContent.toString();
+//        assertThat(output).contains(expectedMessage);
+//        System.setOut(System.out);
+//        System.setIn(System.in);
+//    }
+//
+//
+//    @Test
 //    public void adminPage1() {
-//        String input = "1\n4\n";
+//        String input = "1\n5\n";
 //
 //        InputStream in = new ByteArrayInputStream(input.getBytes());
 //        System.setIn(in);
@@ -905,7 +951,7 @@
 //
 //        UserController controller = spy(new UserController(service));
 //        doNothing().when(controller).showGreetingScreen();
-//
+//        controller.setConnection(connection);
 //        controller.setUserEmail("anya@ya.ru");
 //        controller.setUserName("anya");
 //
@@ -925,59 +971,79 @@
 //
 //    @Test
 //    public void adminPage2() {
-//        String input = "2\nanya@ya.ru\n1\n4\n";
+//        String input = "2\nanya@ya.ru\n1\n5\n";
 //
 //        InputStream in = new ByteArrayInputStream(input.getBytes());
 //        System.setIn(in);
 //
 //
-//        UserController controller = spy(new UserController(service));
-//        doNothing().when(controller).showGreetingScreen();
-//
-//
 //        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
 //        System.setOut(new PrintStream(outContent));
+//        try {
 //
-//        controller.setHabitRepository(new HabitRepository(service.getRepoConnection(), service.getRepository()));
-//        controller.setConnection(service.getRepoConnection());
-//        controller.showMainPageAdmin();
+//            Connection connectionMock = mock(Connection.class);
+//            service = spy(new UserService(userRepository));
 //
-//        String expectedMessage1 = "Успешно";
-//        String expectedMessage2 = "1. anya, anya@ya.ru, активен=false";
+//            doNothing().when(connectionMock).commit();
+//            UserController controller = spy(new UserController(service));
+//            doNothing().when(controller).showGreetingScreen();
+//
+//            HabitRepository habitRepository = new HabitRepository(userRepository);
+//            controller.setHabitRepository(habitRepository);
+//            controller.setConnection(connectionMock);
+//            controller.showMainPageAdmin();
+//
+//            String expectedMessage1 = "Успешно";
+//            String expectedMessage2 = "1. anya, anya@ya.ru, активен=false";
 //
 //
-//        String output = outContent.toString();
-//        assertThat(output).contains(expectedMessage1);
-//        assertThat(output).contains(expectedMessage2);
+//            String output = outContent.toString();
+//            assertThat(output).contains(expectedMessage1);
+//            assertThat(output).contains(expectedMessage2);
 //
 //
-//        System.setOut(System.out);
-//        System.setIn(System.in);
+//            System.setOut(System.out);
+//            System.setIn(System.in);
+//
+//        } catch (SQLException e) {
+//            fail();
+//        }
+//
 //    }
 //
 //    @Test
-//    public void adminPage3() {
-//        String input = "3\nanya@ya.ru\n1\n4\n";
+//    public void adminPage3NoUsers() {
+//        String input = "3\nanya@ya.ru\n5\n";
 //
 //        InputStream in = new ByteArrayInputStream(input.getBytes());
 //        System.setIn(in);
 //
-//
-//        UserController controller = spy(new UserController(service));
-//        doNothing().when(controller).showGreetingScreen();
-//
-//
 //        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
 //        System.setOut(new PrintStream(outContent));
 //
-//        controller.showMainPageAdmin();
+//        try {
+//            connection = mock(Connection.class);
+//            service = spy(new UserService(userRepository));
+//            service.deleteUserByEmail("anya@ya.ru");
+//            doNothing().when(connection).commit();
 //
-//        String expectedMessage1 = "Успешно";
-//        String expectedMessage2 = "Ни одного пользователя не создано!";
+//            UserController controller = spy(new UserController(service));
+//
+//            doNothing().when(controller).showGreetingScreen();
+//            controller.setConnection(connection);
+//
+//            controller.setUserEmail("admin@admin.ru");
+//            controller.setUserName("admin");
+//
+//            controller.showMainPageAdmin();
+//        } catch (SQLException e) {
+//            fail();
+//        }
+//
+//        String expectedMessage = "Ни одного пользователя не создано!";
 //
 //        String output = outContent.toString();
-//        assertThat(output).contains(expectedMessage1);
-//        assertThat(output).contains(expectedMessage2);
+//        assertThat(output).contains(expectedMessage);
 //        System.setOut(System.out);
 //        System.setIn(System.in);
 //    }

@@ -34,15 +34,6 @@ public class UserService {
     }
 
     /**
-     * Получает сессию соединения с базой данных через репозиторий.
-     *
-     * @return сессия соединения с базой данных
-     */
-    public Connection getRepoConnection() {
-        return this.repository.getConnection();
-    }
-
-    /**
      * Создает нового пользователя с заданными данными.
      *
      * @param name     имя пользователя

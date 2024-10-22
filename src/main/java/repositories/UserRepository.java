@@ -2,6 +2,7 @@ package repositories;
 
 import lombok.Getter;
 import models.User;
+import serviceClasses.Config;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -17,16 +18,14 @@ import java.util.List;
  */
 @Getter
 public class UserRepository {
-    private final Connection connection;
 
     /**
-     * Конструктор для инициализации репозитория для работы с пользователем, используя созданную
-     * сессию соединения с базой данных.
+     * Конструктор для инициализации репозитория для работы с пользователем.
+     * Сессии соединения с базой данных создается внутри транзакций.
      *
-     * @param connection сессия соединения с базой данных
      */
-    public UserRepository(Connection connection) {
-        this.connection = connection;
+    public UserRepository() {
+
     }
 
     /**
@@ -35,9 +34,12 @@ public class UserRepository {
      * @return список из всех пользователей
      */
     public List<User> getUsers() {
+        Config config = new Config();
+        Connection сonnection = (Connection) config.establishConnection()[0];
+
         List<User> users = new ArrayList<>();
         String sql = "SELECT * FROM main.users";
-        try (PreparedStatement statement = this.connection.prepareStatement(sql)) {
+        try (PreparedStatement statement = сonnection.prepareStatement(sql)) {
             ResultSet resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
@@ -62,9 +64,12 @@ public class UserRepository {
      * @return список из всех зарегистрированных адресов электронной почты
      */
     public List<String> getEmails() {
+        Config config = new Config();
+        Connection connection = (Connection) config.establishConnection()[0];
+
         List<String> emails = new ArrayList<>();
         String sql = "SELECT email FROM main.users";
-        try (PreparedStatement statement = this.connection.prepareStatement(sql)) {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             ResultSet resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
@@ -86,10 +91,12 @@ public class UserRepository {
      * @param roleId   роль пользователя (всегда 1, за исключением случая создания нового администратора)
      */
     public void addUser(String name, String email, String password, int roleId) throws SQLException {
+        Config config = new Config();
+        Connection connection = (Connection) config.establishConnection()[0];
         email = email.toLowerCase().replaceAll("\\s+", " ").trim();
         String sql = "INSERT INTO main.users (name, email, password, role_id, is_active) VALUES (?, ?, ?, ?, ?)";
 
-        PreparedStatement statement = this.connection.prepareStatement(sql);
+        PreparedStatement statement = connection.prepareStatement(sql);
             statement.setString(1, name);
             statement.setString(2, email);
             statement.setString(3, password);
@@ -97,6 +104,7 @@ public class UserRepository {
             statement.setBoolean(5, true);
 
             statement.executeUpdate();
+        statement.close();
     }
 
     /**
@@ -106,10 +114,15 @@ public class UserRepository {
      * @return объект User, если пользователь найден; null иначе
      */
     public User readUserByEmail(String email) {
+
+        Config config = new Config();
+        Connection connection = (Connection) config.establishConnection()[0];
+
         String normalizedEmail = email.toLowerCase().replaceAll("\\s+", " ").trim();
 
         String sql = "SELECT * FROM main.users WHERE users.email = ?";
-        try (PreparedStatement statement = this.connection.prepareStatement(sql)) {
+
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, normalizedEmail);
             ResultSet resultSet = statement.executeQuery();
 
@@ -120,8 +133,10 @@ public class UserRepository {
                         resultSet.getString("password"),
                         resultSet.getInt("role_id"));
                 user.setActive(resultSet.getBoolean("is_active"));
+                statement.close();
                 return user;
             } else {
+                statement.close();
                 return null;
             }
         } catch (SQLException e) {
@@ -137,14 +152,16 @@ public class UserRepository {
      */
 
     public void deleteUserByEmail(String email) throws SQLException {
+        Config config = new Config();
+        Connection connection = (Connection) config.establishConnection()[0];
         email = email.toLowerCase().replaceAll("\\s+", " ").trim();
         String sql = "DELETE FROM main.users WHERE users.email = ?";
 
-    PreparedStatement statement = this.connection.prepareStatement(sql);
+    PreparedStatement statement = connection.prepareStatement(sql);
             statement.setString(1, email.toLowerCase().replaceAll("\\s+", " ").trim());
 
             statement.executeUpdate();
-
+        statement.close();
     }
 
     /**
@@ -155,9 +172,11 @@ public class UserRepository {
      * -1 иначе
      */
     public int findUserIdByEmail(String email) {
+        Config config = new Config();
+        Connection connection = (Connection) config.establishConnection()[0];
         email = email.toLowerCase().replaceAll("\\s+", " ").trim();
         String sql = "SELECT id FROM main.users WHERE users.email = ?";
-        try (PreparedStatement statement = this.connection.prepareStatement(sql)) {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, email);
             ResultSet resultSet = statement.executeQuery();
             int userId = -1;
@@ -191,13 +210,16 @@ public class UserRepository {
      * @param user     пользователь, для которого обновляется электронная почта
      */
     public void updateEmail(String newEmail, User user) throws SQLException {
+        Config config = new Config();
+        Connection connection = (Connection) config.establishConnection()[0];
         String sql = "UPDATE main.users SET email = ? WHERE users.email = ?";
 
-       PreparedStatement statement = this.connection.prepareStatement(sql);
+       PreparedStatement statement = connection.prepareStatement(sql);
             statement.setString(1, newEmail.toLowerCase().replaceAll("\\s+", " ").trim());
             statement.setString(2, user.getEmail().toLowerCase().replaceAll("\\s+", " ").trim());
 
             statement.executeUpdate();
+        statement.close();
     }
 
     /**
@@ -213,12 +235,15 @@ public class UserRepository {
     }
 
     private void executeNameOrPassUpdate(String firstValue, User user, String sql) throws SQLException {
-        PreparedStatement statement = this.connection.prepareStatement(sql);
+        Config config = new Config();
+        Connection connection = (Connection) config.establishConnection()[0];
+
+        PreparedStatement statement = connection.prepareStatement(sql);
             statement.setString(1, firstValue);
             statement.setString(2, user.getEmail().toLowerCase().replaceAll("\\s+", " ").trim());
 
             statement.executeUpdate();
-
+            statement.close();
 
     }
 
@@ -229,16 +254,19 @@ public class UserRepository {
      * @param user     пользователь, для которого обновлется статус
      */
     public void updateActive(boolean isActive, User user) throws SQLException {
+        Config config = new Config();
+        Connection connection = (Connection) config.establishConnection()[0];
+
         String email = user.getEmail().toLowerCase().replaceAll("\\s+", " ").trim();
 
         String sql = "UPDATE main.users SET is_active = ? WHERE users.email = ?";
 
-        PreparedStatement statement = this.connection.prepareStatement(sql);
+        PreparedStatement statement = connection.prepareStatement(sql);
         statement.setBoolean(1, isActive);
         statement.setString(2, email);
 
         statement.executeUpdate();
-
+        statement.close();
 
     }
 }

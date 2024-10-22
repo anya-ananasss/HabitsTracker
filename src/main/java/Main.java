@@ -12,12 +12,12 @@ import java.sql.SQLException;
 public class Main {
     public static void main(String[] args) throws SQLException, LiquibaseException {
         Config config = new Config();
-        Object[] connections = config.establishConnections();
+        Object[] connections = config.establishConnection();
         Connection con = (Connection) connections[0];
         Liquibase liquibase = (Liquibase) connections[1];
         try {
             if (con != null) {
-                UserRepository userRepository = new UserRepository(con);
+                UserRepository userRepository = new UserRepository();
                 UserService userService = new UserService(userRepository);
                 UserController userController = new UserController(userService);
 

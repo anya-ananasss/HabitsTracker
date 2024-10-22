@@ -30,9 +30,9 @@ public class UserServiceTest {
     void setUp() {
         postgres.start();
         Config config = new Config();
-        Object[] connections = config.establishConnections();
+        Object[] connections = config.establishConnection();
         connection = (Connection) connections[0];
-        userRepository = new UserRepository(connection);
+        userRepository = new UserRepository();
         service = new UserService(userRepository);
     }
 
@@ -244,12 +244,5 @@ public class UserServiceTest {
         } catch (SQLException e){
             fail();
         }
-    }
-
-    @Test
-    @DisplayName("Получение сессии соединения")
-    public void getConnection (){
-            Connection connection1 = service.getRepoConnection();
-            assertThat(connection1).isEqualTo(this.connection);
     }
 }

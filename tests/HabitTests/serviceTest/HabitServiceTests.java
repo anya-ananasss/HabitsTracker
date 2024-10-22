@@ -36,11 +36,11 @@ public class HabitServiceTests {
     void setUp() {
         postgres.start();
         Config config = new Config();
-        Object[] connections = config.establishConnections();
+        Object[] connections = config.establishConnection();
         connection = (Connection) connections[0];
-        userRepository = new UserRepository(connection);
+        userRepository = new UserRepository();
         user = userRepository.readUserByEmail("anya@ya.ru");
-        habitRepository = new HabitRepository(connection, userRepository);
+        habitRepository = new HabitRepository(userRepository);
         service = new HabitService(habitRepository, this.user);
     }
 

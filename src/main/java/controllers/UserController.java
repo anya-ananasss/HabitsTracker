@@ -13,6 +13,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Scanner;
+
 /**
  * Контроллер для сущности User и взаимодействия с приложением через консольный интерфейс.
  * <p>
@@ -24,13 +25,6 @@ import java.util.Scanner;
 @Getter
 @Setter
 public class UserController {
-    /**
-     * Конструктор для создания контроллера с заданным сервисом.
-     * @param service сервис с бизнес-логикой для User
-     */
-    public UserController(UserService service) {
-        this.service = service;
-    }
 
     private final Scanner scanner = new Scanner(System.in);
     private final UserService service;
@@ -42,6 +36,16 @@ public class UserController {
     private Connection connection;
 
     /**
+     * Конструктор для создания контроллера с заданным сервисом.
+     *
+     * @param service сервис с бизнес-логикой для User
+     */
+    public UserController(UserService service) {
+        this.service = service;
+    }
+
+
+    /**
      * Показывает приветственный экран.
      * Инициализирует habitRepository по сессии соединения с базой данных и
      * пользовательскому репозиторию для дальнейшего использования,
@@ -49,8 +53,7 @@ public class UserController {
      * зарегистрироваться, войти в аккаунт или выйти из программы.
      */
     public void showGreetingScreen() {
-        this.habitRepository = new HabitRepository(service.getRepoConnection(), this.service.getRepository());
-        this.connection = service.getRepoConnection();
+        this.habitRepository = new HabitRepository(this.service.getRepository());
         while (true) {
             if (!mainPageShown) {
                 System.out.println("Здравствуйте! Введите 1, чтобы зарегистрироваться, 2 - чтобы войти в существующий аккаунт, 3 - чтобы выйти из программы");
@@ -94,6 +97,7 @@ public class UserController {
     /**
      * Проверяет, не пусто ли имя, которое пользователь вводит при регистрации. Если пусто, просит ввести имя еще раз,
      * пока оно не будет не пустым.
+     *
      * @return имя пользователя
      */
     public String enterNameInRegistration() {
@@ -113,6 +117,7 @@ public class UserController {
      * Проверяет приемлемость адреса электронной почты, который пользователь вводит при регистрации. Если этот адрес уже
      * зарегистрирован или не соответствует шаблону адреса электронной почты, просит ввести адрес еще раз, пока он не будет
      * приемлемым.
+     *
      * @return адрес электронной почты пользователя
      */
     public String enterEmailInRegistration() {
@@ -136,6 +141,7 @@ public class UserController {
      * Проверяет адрес электронной почты, вводимой при логине. Если введен адрес, не соответствующий шаблону адреса
      * электронной почты, просит ввести еще раз, если адрес корректен, но не зарегистрирован, предлагает попробовать
      * ввод еще раз или вернуться на главную страницу.
+     *
      * @return адрес электронной почты
      */
     public String enterEmailInLogin() {
@@ -169,6 +175,7 @@ public class UserController {
     /**
      * Проверяет пароль, вводимый при регистрации. Если повторный пароль не совпадает с изначально введенным, просит
      * ввести еще раз.
+     *
      * @return пароль пользователя
      */
     public String enterPasswordInRegistration() {
@@ -203,8 +210,8 @@ public class UserController {
                 enterPasswordInLogin(email);
                 if (service.readUserByEmail(email).getRole() == 1) {
                     System.out.println("Здравствуйте, " + userName + "!");
-                    habitStatisticsService = new HabitStatisticsService(habitRepository, service.readUserByEmail(email));
-                    initHabitsScheduler(habitStatisticsService);
+                    this.habitStatisticsService = new HabitStatisticsService(this.habitRepository, service.readUserByEmail(email));
+                    initHabitsScheduler();
                     showMainPageUser();
                 } else {
                     showMainPageAdmin();
@@ -222,6 +229,7 @@ public class UserController {
     /**
      * Проверяет соответствие введенного при логине пароля настощяему паролю пользователя. Устанавливает userEmail, userName,
      * если соответствие присутствует, иначе просит повторить ввод до ввода верного пароля или предлагает вернуться на главный экран.
+     *
      * @param email адрес электронной почты пользователя, который входит в аккаунт.
      */
     public void enterPasswordInLogin(String email) {
@@ -239,11 +247,18 @@ public class UserController {
                 System.out.println("Введен неверный пароль! Повторите попытку!");
                 System.out.println("Нажмите 1, чтобы попробовать еще раз, 2, чтобы вернуться в меню.");
                 String i = scanner.nextLine();
-                switch (i) {
-                    case "1" -> {
+                aux:
+                while (true) {
+                    switch (i) {
+                        case "1" -> {
+                            break aux;
+                        }
+                        case "2" -> {
+                            showGreetingScreen();
+                            break aux;
+                        }
+                        default -> System.out.println("Введите 1 или 2.");
                     }
-                    case "2" -> showGreetingScreen();
-                    default -> System.out.println("Введите 1 или 2.");
                 }
             }
         }
@@ -281,92 +296,88 @@ public class UserController {
     public void showMainPageAdmin() {
         System.out.println("Здравствуйте, Администратор!");
         mainLoop:
-        while (true) {
-            System.out.println(Constants.SHOW_ADMIN_MAIN_PAGE_TEXT_BLOCK);
-            String i = scanner.nextLine();
-            switch (i) {
-                case "1" -> {
-                    if (service.getAllUsers().size() == 1) {
-                        System.out.println("Ни одного пользователя не создано!");
-                    } else {
-                        List<User> users = service.getAllUsers();
-                        users.remove(service.readUserByEmail("admin@admin.ru"));
-                        int num = 1;
-                        for (User user : users) {
-                            System.out.println(num + ". " + user.getName() + ", " + user.getEmail() + ", активен=" + user.isActive());
+        try {
+            while (true) {
+                System.out.println(Constants.SHOW_ADMIN_MAIN_PAGE_TEXT_BLOCK);
+                String i = scanner.nextLine();
+                switch (i) {
+                    case "1" -> {
+                        if (service.getAllUsers().size() == 1) {
+                            System.out.println("Ни одного пользователя не создано!");
+                        } else {
+                            List<User> users = service.getAllUsers();
+                            users.remove(service.readUserByEmail("admin@admin.ru"));
+                            int num = 1;
+                            for (User user : users) {
+                                System.out.println(num + ". " + user.getName() + ", " + user.getEmail() + ", активен=" + user.isActive());
+                            }
                         }
                     }
-                }
-                case "2" -> {
-                    if (service.getAllUsers().size() == 1) {
-                        System.out.println("Ни одного пользователя не создано!");
-                    } else {
-                        System.out.println("Введите email пользователя, которого хотите заблокировать.");
-                        String email = scanner.nextLine();
-                        if (service.emailCheck(email).equals("Пользователь с таким email уже зарегистрирован!")) {
-                            if (!service.readUserByEmail(email).isActive()) {
-                                System.out.println("Пользователь уже заблокирован.");
-                            } else {
-                                service.readUserByEmail(email).setActive(false);
-                                try {
+                    case "2" -> {
+                        if (service.getAllUsers().size() == 1) {
+                            System.out.println("Ни одного пользователя не создано!");
+                        } else {
+                            System.out.println("Введите email пользователя, которого хотите заблокировать.");
+                            String email = scanner.nextLine();
+                            if (service.emailCheck(email).equals("Пользователь с таким email уже зарегистрирован!")) {
+                                if (!service.readUserByEmail(email).isActive()) {
+                                    System.out.println("Пользователь уже заблокирован.");
+                                } else {
+                                    service.readUserByEmail(email).setActive(false);
                                     service.updateActive(false, email);
-                                    this.connection.commit();
-                                } catch (SQLException e) {
-                                    System.out.println("Ошибка!" + e);
-                                }
-                                System.out.println("Успешно");
-                            }
-                        } else {
-                            System.out.println("Пользователь с таким email не найден!");
-                        }
-                    }
-                }
-                case "3" -> {
-                    if (service.getAllUsers().size() == 1) {
-                        System.out.println("Ни одного пользователя не создано!");
-                    } else {
-                        System.out.println("Введите email пользователя, которого хотите разблокировать.");
-                        String email = scanner.nextLine();
-                        if (service.emailCheck(email).equals("Пользователь с таким email уже зарегистрирован!")) {
-                            if (service.readUserByEmail(email).isActive()) {
-                                System.out.println("Пользователь не заблокирован.");
-                            } else {
-                                service.readUserByEmail(email).setActive(true);
-                                try {
-                                    service.updateActive(true, email);
-                                    this.connection.commit();
-                                } catch (SQLException e) {
-                                    System.out.println("Ошибка! " + e);
-                                }
-                                System.out.println("Успешно");
-                            }
-                        } else {
-                            System.out.println("Пользователь с таким email не найден!");
-                        }
-                    }
-                }
-                case "4" -> {
-                    if (service.getAllUsers().size() == 1) {
-                        System.out.println("Ни одного пользователя не создано!");
-                    } else {
-                        System.out.println("Введите email пользователя, которого хотите удалить.");
-                        String email = scanner.nextLine();
-                        try {
-                            service.deleteUserByEmail(email);
-                            this.connection.commit();
-                        } catch (SQLException e) {
-                            System.out.println("Ошибка! " + e);
-                        }
-                        System.out.println("Успешно");
-                    }
-                }
-                case "5" -> {
-                    logoutUser();
-                    break mainLoop;
-                }
-                default -> System.out.println("Введите 1, 2, 3, 4 или 5.");
 
+                                    System.out.println("Успешно");
+                                }
+                            } else {
+                                System.out.println("Пользователь с таким email не найден!");
+                            }
+                        }
+                    }
+                    case "3" -> {
+                        if (service.getAllUsers().size() == 1) {
+                            System.out.println("Ни одного пользователя не создано!");
+                        } else {
+                            System.out.println("Введите email пользователя, которого хотите разблокировать.");
+                            String email = scanner.nextLine();
+                            if (service.emailCheck(email).equals("Пользователь с таким email уже зарегистрирован!")) {
+                                if (service.readUserByEmail(email).isActive()) {
+                                    System.out.println("Пользователь не заблокирован.");
+                                } else {
+                                    service.readUserByEmail(email).setActive(true);
+
+                                    service.updateActive(true, email);
+
+
+                                    System.out.println("Успешно");
+                                }
+                            } else {
+                                System.out.println("Пользователь с таким email не найден!");
+                            }
+                        }
+                    }
+                    case "4" -> {
+                        if (service.getAllUsers().size() == 1) {
+                            System.out.println("Ни одного пользователя не создано!");
+                        } else {
+                            System.out.println("Введите email пользователя, которого хотите удалить.");
+                            String email = scanner.nextLine();
+
+                            service.deleteUserByEmail(email);
+
+
+                            System.out.println("Успешно");
+                        }
+                    }
+                    case "5" -> {
+                        logoutUser();
+                        break mainLoop;
+                    }
+                    default -> System.out.println("Введите 1, 2, 3, 4 или 5.");
+                }
+                this.connection.commit();
             }
+        } catch (SQLException e) {
+            System.out.println("Ошибка!" + e);
         }
     }
 
@@ -486,16 +497,18 @@ public class UserController {
             String res = "";
             try {
                 res = service.updateEmail(updatedValue, userEmail);
+
+                if (res.equals(updatedValue)) {
+                    userEmail = updatedValue;
+                    System.out.println("Адрес электронной почты обновлен успешно! Новый адрес: " + updatedValue);
+                    break;
+                } else {
+                    System.out.println(res);
+                }
+
                 this.connection.commit();
             } catch (SQLException e) {
                 System.out.println("Ошибка! " + e);
-            }
-            if (res.equals(updatedValue)) {
-                userEmail = updatedValue;
-                System.out.println("Адрес электронной почты обновлен успешно! Новый адрес: " + updatedValue);
-                break;
-            } else {
-                System.out.println(res);
             }
         }
     }
@@ -507,23 +520,23 @@ public class UserController {
      */
     public void updateName() {
         String updatedValue;
-        while (true) {
-            System.out.println("Введите новое имя");
-            updatedValue = scanner.nextLine();
-            String res = "";
-            try {
-                res = service.updateName(updatedValue, userEmail);
-                this.connection.commit();
-            } catch (SQLException e) {
-                System.out.println("Ошибка! " + e);
+        try {
+            while (true) {
+                System.out.println("Введите новое имя");
+                updatedValue = scanner.nextLine();
+                String res = service.updateName(updatedValue, userEmail);
+
+                if (res.equals(updatedValue)) {
+                    userEmail = updatedValue;
+                    System.out.println(updatedValue + ", имя изменено успешно!");
+                    break;
+                } else {
+                    System.out.println(res);
+                }
             }
-            if (res.equals(updatedValue)) {
-                userEmail = updatedValue;
-                System.out.println(updatedValue + ", имя изменено успешно!");
-                break;
-            } else {
-                System.out.println(res);
-            }
+            this.connection.commit();
+        } catch (SQLException e) {
+            System.out.println("Ошибка! " + e);
         }
     }
 
@@ -560,8 +573,8 @@ public class UserController {
         }
     }
 
-    private void initHabitsScheduler(HabitStatisticsService service) {
-        service.initAllHabitsScheduler();
+    public void initHabitsScheduler() {
+        this.habitStatisticsService.initAllHabitsScheduler();
     }
 
     private void goToHabitController(User user) {
