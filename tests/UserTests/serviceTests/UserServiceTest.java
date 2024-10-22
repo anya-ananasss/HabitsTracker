@@ -1,154 +1,248 @@
 package UserTests.serviceTests;
 
 
-import User.controller.UserController;
-import User.model.User;
-import User.repository.UserRepository;
-import User.service.UserService;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
+import org.testcontainers.containers.PostgreSQLContainer;
+import serviceClasses.Config;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.util.HashSet;
-import java.util.Set;
+import models.User;
+import repositories.UserRepository;
+import services.UserService;
 
-import static org.junit.Assert.*;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 
+import static org.assertj.core.api.Assertions.*;
+
+@DisplayName("Тесты для сервиса, работающего с пользователем")
 public class UserServiceTest {
-    UserRepository repo = new UserRepository();
-    UserService service = new UserService(repo);
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(
+            "postgres:latest"
+    );
+
+    Connection connection;
+    UserRepository userRepository;
+    UserService service;
+    @BeforeEach
+    void setUp() {
+        postgres.start();
+        Config config = new Config();
+        Object[] connections = config.establishConnection();
+        connection = (Connection) connections[0];
+        userRepository = new UserRepository();
+        service = new UserService(userRepository);
+    }
+
+    @AfterEach
+    void clear() throws SQLException {
+        connection.rollback();
+        connection.close();
+        postgres.stop();
+    }
+
+
 
     @Test
+    @DisplayName("Получение всех пользователей")
     public void getAllUsers() {
-        User user1 = new User("anya1", "an1@ya.ru", "1234", 1);
-        User user2 = new User("anya2", "an2@ya.ru", "5678", 1);
-        repo.addUser(user1);
-        repo.addUser(user2);
+        User user1 = new User("admin", "admin@admin.ru", "$2a$10$lD8OC2fG77x4rVgNZ5nUBekUJ5HqP8U02TiPd3uw5HVuyBqdfnMKG", 0);
+        User user2 = new User("anya", "anya@ya.ru", "$2a$10$Lz/N/PPqZTdHgRQC6Wf6EeU/SZb/KxAEGm.H/MDvW315ygMq3wEwm", 1);
 
-        Set<User> test = new HashSet<>();
-        test.add(user1);
-        test.add(user2);
+        List<User> expected = new ArrayList<>();
+        expected.add(user1);
+        expected.add(user2);
 
-        assertEquals(test, service.getAllUsers());
+        List<User> actual = service.getAllUsers();
+
+        assertThat(actual).isEqualTo(expected);
     }
 
     @Test
+    @DisplayName("Проверка пустого имени пользователя")
     public void blankName() {
-        String expectedMessage = "Имя не может быть пустым! Пожалуйста, введите имя!";
+        String expected = "Имя не может быть пустым! Пожалуйста, введите имя!";
         String actual = service.nameCheck("");
-        assertEquals(expectedMessage, actual);
+
+        assertThat(actual).isEqualTo(expected);
     }
 
     @Test
+    @DisplayName("Проверка приемлемого имени")
     public void checkName() {
-        String expectedMessage = "anya";
+        String expected = "anya";
         String actual = service.nameCheck("anya");
-        assertEquals(expectedMessage, actual);
+
+        assertThat(actual).isEqualTo(expected);
     }
 
     @Test
+    @DisplayName("Проверка неприемлемого email (нет @, .)")
     public void incorrectEmail1() {
         String actual = service.emailCheck("anya");
         String expected = "Пожалуйста, введите корректный email!";
 
-        assertEquals(expected, actual);
+        assertThat(actual).isEqualTo(expected);
     }
 
     @Test
+    @DisplayName("Проверка неприемлемого email (нет .)")
     public void incorrectEmail2() {
         String actual = service.emailCheck("anya@ya");
         String expected = "Пожалуйста, введите корректный email!";
 
-        assertEquals(expected, actual);
+        assertThat(actual).isEqualTo(expected);
     }
 
     @Test
+    @DisplayName("Проверка неприемлемого email (кириллицей)")
     public void incorrectEmail3() {
         String actual = service.emailCheck("аня@я.ру");
         String expected = "Пожалуйста, введите корректный email!";
 
-        assertEquals(expected, actual);
+        assertThat(actual).isEqualTo(expected);
     }
 
     @Test
+    @DisplayName("Проверка неприемлемого email (нет @)")
     public void incorrectEmail4() {
         String actual = service.emailCheck("anya.ru");
         String expected = "Пожалуйста, введите корректный email!";
 
-        assertEquals(expected, actual);
+        assertThat(actual).isEqualTo(expected);
     }
 
     @Test
+    @DisplayName("Проверка неприемлемого email (пустой email)")
     public void incorrectEmail5() {
         String actual = service.emailCheck("");
         String expected = "Пожалуйста, введите корректный email!";
 
-        assertEquals(expected, actual);
+        assertThat(actual).isEqualTo(expected);
     }
 
     @Test
+    @DisplayName("Проверка неприемлемого email (такой уже зарегистрирован)")
     public void nonUniqueEmail() {
 
-        service.createUser("anya", "anya@ya.ru", "1234");
         String expected = "Пользователь с таким email уже зарегистрирован!";
         String actual = service.emailCheck("anya@ya.ru");
-        assertEquals(expected, actual);
+
+        assertThat(actual).isEqualTo(expected);
 
     }
 
     @Test
-    public void checkEmail() {
-        String expected = "anya@ya.ru";
-        String actual = service.emailCheck("anya@ya.ru");
-        assertEquals(expected, actual);
+    @DisplayName("Проверка приемлемого email")
+    public void basicCheckEmail() {
+        String expected = "anya_anya@ya.ru";
+        String actual = service.emailCheck("anya_anya@ya.ru");
+
+        assertThat(actual).isEqualTo(expected);
     }
 
     @Test
+    @DisplayName("Попытка входа в систему зарегистрированного пользователя")
     public void loginUser() {
-        service.createUser("anya", "anya@ya.ru", "1234");
         Object[] expected = new Object[]{true, "anya"};
         Object[] actual = service.loginUser("anya@ya.ru", "1234");
-        assertArrayEquals(expected, actual);
+
+        assertThat(actual).isEqualTo(expected);
     }
 
     @Test
-    public void loginUser_unknownEmail() {
-        service.createUser("anya", "anya@ya.ru", "1234");
+    @DisplayName("Попытка входа в систему с незарегистрированным email")
+    public void loginUserUnknownEmail() {
         Object[] expected = new Object[]{false, "unknownEmail"};
         Object[] actual = service.loginUser("anyaa@ya.ru", "1234");
-        assertArrayEquals(expected, actual);
+
+        assertThat(actual).isEqualTo(expected);
     }
 
     @Test
-    public void loginUser_wrongPass() {
-        service.createUser("anya", "anya@ya.ru", "1234");
+    @DisplayName("Попытка входа в систему с зарегистрированным email, но неподходящим паролем")
+    public void loginUserWrongPass() {
         Object[] expected = new Object[]{false, "wrongPass"};
         Object[] actual = service.loginUser("anya@ya.ru", "5678");
-        assertArrayEquals(expected, actual);
+
+        assertThat(actual).isEqualTo(expected);
+    }
+    @Test
+    @DisplayName("Обновление имени пользователя")
+        public void updateName (){
+       try {
+           String expected = "newAnya";
+           String actual = service.updateName("newAnya", "anya@ya.ru");
+
+           assertThat(actual).isEqualTo(expected);
+       } catch (SQLException e){
+           fail();
+       }
+    }
+    @Test
+    @DisplayName("Обновление email пользователя")
+    public void updateEmail (){
+        try {
+            String expected = "newanya@ya.ru";
+            String actual = service.updateEmail("newanya@ya.ru", "anya@ya.ru");
+
+            assertThat(actual).isEqualTo(expected);
+        } catch (SQLException e){
+            fail();
+        }
+    }
+    @Test
+    @DisplayName("Обновление email пользователя")
+    public void updatePassword (){
+        try {
+
+            service.updatePassword("5678", "anya@ya.ru");
+
+            assertThat(service.readUserByEmail("anya@ya.ru").getPassword())
+                    .isNotEqualTo("$2a$10$Lz/N/PPqZTdHgRQC6Wf6EeU/SZb/KxAEGm.H/MDvW315ygMq3wEwm");
+
+        } catch (SQLException e){
+            fail();
+        }
     }
 
     @Test
-    public void registration_repeatedPassMismatch() {
-        String input = "1234\n1233\n1234\n1234";
-        InputStream in = new ByteArrayInputStream(input.getBytes());
-        System.setIn(in);
-        UserController controller = new UserController(service);
-        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
-        System.setOut(new PrintStream(outContent));
-        controller.enterPassword_registration();
+    @DisplayName("Обновление статуса активности аккаунта пользователя")
+    public void updateActive (){
+        try {
 
+            service.updateActive(false, "anya@ya.ru");
+            assertThat(service.readUserByEmail("anya@ya.ru").isActive()).isEqualTo(false);
 
-        String expectedMessage = "Пароли не совпадают! Пожалуйста, повторите попытку!\r\nВведите пароль";
-        String output = outContent.toString();
-        String expectedNameEmail = "";
-        assertTrue(output.contains(expectedMessage));
-        assertTrue(controller.getUserEmail().contentEquals(expectedNameEmail));
-        assertTrue(controller.getUserName().contentEquals(expectedNameEmail));
-        System.setOut(System.out);
-        System.setIn(System.in);
+        } catch (SQLException e){
+            fail();
+        }
     }
 
+    @Test
+    @DisplayName("Удаление пользователя")
+    public void deleteUser (){
+        try {
+
+            service.deleteUserByEmail("anya@ya.ru");
+            assertThat(service.readUserByEmail("anya@ya.ru")).isNull();
+
+        } catch (SQLException e){
+            fail();
+        }
+    }
+    @Test
+    @DisplayName("Добавление пользователя")
+    public void createUser (){
+        try {
+            service.createUser("newAnya", "newanya@ya.ru", "5678");
+
+            assertThat(service.readUserByEmail("newanya@ya.ru")).isNotNull();
+
+        } catch (SQLException e){
+            fail();
+        }
+    }
 }

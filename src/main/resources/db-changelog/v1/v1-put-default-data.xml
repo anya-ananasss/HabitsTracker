@@ -1,0 +1,90 @@
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+    <changeSet id="insert-admin-role" author="Gureva Anna">
+        <insert schemaName="main" tableName="role_mapping">
+            <column name="role" value="ROLE_ADMIN"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="insert-user-role" author="Gureva Anna">
+        <insert schemaName="main" tableName="role_mapping">
+            <column name="role" value="ROLE_USER"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="insert-admin-user" author="Gureva Anna">
+        <insert schemaName="main" tableName="users">
+            <column name="name" value="admin"/>
+            <column name="email" value="admin@admin.ru"/>
+            <column name="password" value="$2a$10$lD8OC2fG77x4rVgNZ5nUBekUJ5HqP8U02TiPd3uw5HVuyBqdfnMKG"/>
+            <column name="role_id" value="0"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="insert-user-user" author="Gureva Anna">
+        <insert schemaName="main" tableName="users">
+            <column name="name" value="anya"/>
+            <column name="email" value="anya@ya.ru"/>
+            <column name="password" value="$2a$10$Lz/N/PPqZTdHgRQC6Wf6EeU/SZb/KxAEGm.H/MDvW315ygMq3wEwm"/>
+            <column name="role_id" value="1"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="insert-drink-water-habit" author="Gureva Anna">
+        <insert schemaName="main" tableName="habits">
+            <column name="name" value="пить воду"/>
+            <column name="description" value="Вода вкусная"/>
+            <column name="created_at" value="2024-10-16 12:30:45"/>
+            <column name="user_id" value="2"/>
+            <column name="frequency" value="DAILY"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="insert-wake-up-at-5-habit" author="Gureva Anna">
+        <insert schemaName="main" tableName="habits">
+            <column name="name" value="вставать в 5 утра"/>
+            <column name="description" value=""/>
+            <column name="created_at" value="2024-10-18 01:14:00"/>
+            <column name="user_id" value="2"/>
+            <column name="frequency" value="DAILY"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="insert-drink-water-stats-1" author="Gureva Anna">
+        <insert schemaName="main" tableName="habit_stats">
+            <column name="habit_name" value="пить воду"/>
+            <column name="user_id" value="2"/>
+            <column name="date" value="2024-10-16"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="insert-drink-water-stats-2" author="Gureva Anna">
+        <insert schemaName="main" tableName="habit_stats">
+            <column name="habit_name" value="пить воду"/>
+            <column name="user_id" value="2"/>
+            <column name="date" value="2024-10-17"/>
+            <column name="mark" value="true"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="insert-drink-water-stats-3" author="Gureva Anna">
+        <insert schemaName="main" tableName="habit_stats">
+            <column name="habit_name" value="пить воду"/>
+            <column name="user_id" value="2"/>
+            <column name="date" value="2024-10-18"/>
+            <column name="mark" value="true"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="insert-wake-up-at-5-stats-1" author="Gureva Anna">
+        <insert schemaName="main" tableName="habit_stats">
+            <column name="habit_name" value="вставать в 5 утра"/>
+            <column name="user_id" value="2"/>
+            <column name="date" value="2024-10-18"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>
+
